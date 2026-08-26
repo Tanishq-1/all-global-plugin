@@ -24,7 +24,7 @@ All-Global-Plugin/
 ├── state.json                       # auto-managed: version, upstream SHA, batch id
 ├── INDEX.md                         # generated human-readable catalog
 ├── QUARANTINE.md                    # failure log: plugin, gate failed, reason
-├── release-notes/<name>-<ts>.md     # upstream delta per update
+├── release-notes/<name>-<ts>.md     # upstream delta per update (Phase 4)
 ├── scripts/                         # CLI + adapters
 └── .github/workflows/maintain.yml   # weekly automation (Phase 4)
 ```
