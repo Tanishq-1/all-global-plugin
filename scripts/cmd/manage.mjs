@@ -43,7 +43,7 @@ export async function runAdd({ repoRoot, name, url, category, tier,
     }
     return { ok: false, error: `install failed for ${name}; manifest rolled back` }
   }
-  return { ok: true }
+  return dryRun ? { ok: true, dryRun: true } : { ok: true }
 }
 
 export function runRemove({ repoRoot, name, dryRun = false }) {

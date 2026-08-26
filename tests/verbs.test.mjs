@@ -44,6 +44,18 @@ test('add rolls manifest back when install fails', async () => {
   assert.equal(m.plugins.length, 0)
 })
 
+test('add dry-run reports ok + dryRun markers and persists nothing', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  const res = await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                             category: '_universal', tier: 'oss', dryRun: true })
+  assert.equal(res.ok, true)
+  assert.equal(res.dryRun, true)
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+  assert.equal(m.plugins.length, 0)
+  assert.equal(fs.existsSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'one')), false)
+})
+
 test('remove drops manifest entry but keeps folder', async () => {
   const root = fixtureRepo()
   const { runAdd, runRemove } = await import('../scripts/cmd/manage.mjs')

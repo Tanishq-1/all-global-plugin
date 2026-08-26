@@ -77,5 +77,5 @@ export async function runUpdate({ repoRoot, name = null, category = null, dryRun
     commitAll(repoRoot, `Update ${entry.name} → ${readVersion(dest) ?? 'n/a'} (${String(reach).slice(0, 7)})`)
     updated.push(entry.name)
   }
-  return { updated, skipped, failed }
+  return dryRun ? { updated, skipped, failed, dryRun: true } : { updated, skipped, failed }
 }

@@ -58,9 +58,10 @@ test('runUpdate quarantines structurally broken upstream and leaves dest untouch
   assert.equal(fs.readFileSync(path.join(dest, 'sentinel.txt'), 'utf8'), 'keep me')
 })
 
-test('dry-run mutates nothing', async () => {
+test('dry-run mutates nothing and reports dryRun marker', async () => {
   const { root, runUpdate } = await setup()
   const res = await runUpdate({ repoRoot: root, name: 'demo', category: null, dryRun: true })
   assert.deepEqual(res.skipped, ['demo'])
+  assert.equal(res.dryRun, true)
   assert.equal(fs.existsSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'demo')), false)
 })
