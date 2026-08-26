@@ -1,0 +1,3 @@
+node_modules/
+paths.local.json
+universal-plugin/**/*.old-*

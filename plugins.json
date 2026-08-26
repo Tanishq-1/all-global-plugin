@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "plugin_dir": "universal-plugin",
+  "targets": {
+    "claude": { "settings_path": "~/.claude/settings.json" },
+    "opencode": { "config_path": "~/.config/opencode/opencode.jsonc" },
+    "bridge": { "path": "~/.agents/skills" },
+    "cursor": { "path": "~/.cursor/skills" },
+    "qwen": { "path": "~/.qwen/skills" },
+    "mcp": {
+      "codex": "~/.codex/config.toml",
+      "cursor": "~/.cursor/mcp.json",
+      "gemini": "~/.gemini/settings.json",
+      "qwen": "~/.qwen/settings.json"
+    }
+  },
+  "plugins": []
+}
