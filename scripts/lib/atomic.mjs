@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 export function stageDir(dest) {
-  const parent = fs.existsSync(dest) ? path.dirname(dest) : dest
+  const parent = path.dirname(dest)
   fs.mkdirSync(parent, { recursive: true })
   return fs.mkdtempSync(path.join(parent, '.stage-'))
 }
