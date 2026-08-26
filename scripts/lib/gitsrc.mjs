@@ -1,4 +1,8 @@
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+
+const COMMIT_PATHS = ['universal-plugin', 'plugins.json', 'state.json', 'QUARANTINE.md']
 
 function run(args, opts = {}) { return spawnSync('git', args, { encoding: 'utf8', ...opts }) }
 
@@ -23,9 +27,10 @@ export function headSha(dir) {
 }
 
 export function commitAll(dir, message) {
-  run(['-C', dir, 'add', '-A'])
+  const present = COMMIT_PATHS.filter(p => fs.existsSync(path.join(dir, p)))
+  if (present.length) run(['-C', dir, 'add', '--', ...present])
   const r = run(['-C', dir, 'commit', '-q', '-m', message])
-  if (r.status !== 0 && !/nothing to commit/.test(r.stdout + r.stderr)) {
+  if (r.status !== 0 && !/nothing( added)? to commit/.test(r.stdout + r.stderr)) {
     throw new Error(`git commit failed: ${r.stderr}`)
   }
 }
