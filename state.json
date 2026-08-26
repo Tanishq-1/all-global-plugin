@@ -29,6 +29,12 @@
       "upstream_commit_sha": "3b3fad96af16a10759d930941b4520ba0c40edae",
       "snapshot_commit": "3b3fad96af16a10759d930941b4520ba0c40edae",
       "last_updated": "2026-08-26T11:26:54.883Z"
+    },
+    "ui-ux-pro-max": {
+      "version": "2.13.0",
+      "upstream_commit_sha": "e4f45473691e4b389519ee4bc359a3d6df666c26",
+      "snapshot_commit": "e4f45473691e4b389519ee4bc359a3d6df666c26",
+      "last_updated": "2026-08-26T11:27:11.102Z"
     }
   }
 }

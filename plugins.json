@@ -94,6 +94,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "category": "frontend",
+      "tier": "oss",
+      "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
