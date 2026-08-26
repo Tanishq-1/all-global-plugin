@@ -160,6 +160,35 @@ gitignored `paths.local.json`.
 Discoverability prose (descriptions, star/install counts, research URLs) lives in
 generated `INDEX.md`, kept out of the machine-read manifest so validation stays strict.
 
+### Customize layer — `local.json` (Phase 2)
+
+Preferences never touch `plugins.json`. A gitignored **`local.json`** at repo root
+(absorbs the earlier `paths.local.json` role) holds:
+
+```jsonc
+{
+  "paths": { /* optional per-machine target overrides */ },
+  "plugins": { "ecc": { "enabled": false } }   // user choice wins over everything
+}
+```
+
+**Active-set rule:** `local.plugins[name].enabled` → else manifest entry's optional
+`enabled_by_default` (absent = true). Verbs `enable <name>` / `disable <name>`
+write local.json; `status` shows an Active column (`active | off (you) | off (default)`).
+Manifest may carry `enabled_by_default` hints (ECC ships as false).
+
+### Research corrections (2026-08-26, verified against vendor docs)
+- Cursor reads `~/.agents/skills/` globally natively (+ `.claude/`, `.codex/`
+  compat dirs) — no dedicated Cursor skills adapter needed; bridge covers it.
+- Antigravity CLI replaced consumer Gemini CLI on 2026-06-18; global skills path is
+  now `~/.gemini/antigravity-cli/skills/`, workspace `.agents/skills/`, MCP moved to
+  `.agents/mcp_config.json`. Gemini adapter writes BOTH legacy and new global paths.
+- Grok supports `[skills] paths/disabled` in config.toml (native alternative to
+  junctions; not used in v1 — bridge covers it).
+- Windows directory junctions need no admin rights (ecosystem-standard technique).
+- Claude Code settings relocation honors `CLAUDE_CONFIG_DIR`; opencode honors
+  `XDG_CONFIG_HOME` on all platforms.
+
 ---
 
 ## 5. Sync Engine & Adapters
