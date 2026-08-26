@@ -23,6 +23,12 @@
       "upstream_commit_sha": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
       "snapshot_commit": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
       "last_updated": "2026-08-26T11:26:23.372Z"
+    },
+    "anthropic-doc-skills": {
+      "version": null,
+      "upstream_commit_sha": "3b3fad96af16a10759d930941b4520ba0c40edae",
+      "snapshot_commit": "3b3fad96af16a10759d930941b4520ba0c40edae",
+      "last_updated": "2026-08-26T11:26:54.883Z"
     }
   }
 }

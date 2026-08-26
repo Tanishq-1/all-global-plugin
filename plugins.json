@@ -80,6 +80,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "anthropic-doc-skills",
+      "category": "fullstack",
+      "tier": "official",
+      "url": "https://github.com/anthropics/skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
