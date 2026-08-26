@@ -41,6 +41,12 @@
       "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
       "snapshot_commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
       "last_updated": "2026-08-26T11:27:30.001Z"
+    },
+    "supabase-agent-skills": {
+      "version": "0.1.8",
+      "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
+      "snapshot_commit": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
+      "last_updated": "2026-08-26T11:27:37.460Z"
     }
   }
 }

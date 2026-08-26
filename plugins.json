@@ -122,6 +122,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "supabase-agent-skills",
+      "category": "backend",
+      "tier": "oss",
+      "url": "https://github.com/supabase/agent-skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
