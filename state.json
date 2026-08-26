@@ -35,6 +35,12 @@
       "upstream_commit_sha": "e4f45473691e4b389519ee4bc359a3d6df666c26",
       "snapshot_commit": "e4f45473691e4b389519ee4bc359a3d6df666c26",
       "last_updated": "2026-08-26T11:27:11.102Z"
+    },
+    "gsap-skills": {
+      "version": "1.0.0",
+      "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "snapshot_commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "last_updated": "2026-08-26T11:27:30.001Z"
     }
   }
 }
