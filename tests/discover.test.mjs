@@ -19,6 +19,12 @@ body`
   assert.equal(fm.description, 'Does X. Use when the user asks for X handling.')
 })
 
+test('parseFrontmatter folds continuations after an empty inline value', () => {
+  const fm = parseFrontmatter('---\nname: x\ndescription:\n  folded text here\n---\nbody')
+  assert.equal(fm.name, 'x')
+  assert.equal(fm.description, 'folded text here')
+})
+
 test('parseFrontmatter returns null without frontmatter', () => {
   assert.equal(parseFrontmatter('just text'), null)
 })
