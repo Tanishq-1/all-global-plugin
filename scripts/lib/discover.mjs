@@ -4,12 +4,12 @@ import { parseFrontmatter } from './frontmatter.mjs'
 
 const SKIP = new Set(['.git', 'node_modules'])
 
-export function discoverSkills(root) {
+export function discoverSkills(root, skip = null) {
   const found = []
   if (!fs.existsSync(root)) return found
   const walk = (dir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!e.isDirectory() || SKIP.has(e.name)) continue
+      if (!e.isDirectory() || SKIP.has(e.name) || (skip && skip(e.name))) continue
       const full = path.join(dir, e.name)
       const sm = path.join(full, 'SKILL.md')
       if (fs.existsSync(sm)) {

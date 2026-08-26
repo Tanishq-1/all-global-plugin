@@ -16,11 +16,13 @@ export function pluginDest(repoRoot, entry) {
                    entry.category, entry.tier, entry.name)
 }
 
+const DEBRIS = (name) => name === '_quarantine' || name.startsWith('.stage-') || name.includes('.old-')
+
 export function collectExistingSkillNames(repoRoot) {
   const m = loadManifestTolerant(repoRoot)
   const base = path.join(repoRoot, m.plugin_dir ?? 'universal-plugin')
   const names = new Set()
-  for (const s of discoverSkills(base)) {
+  for (const s of discoverSkills(base, DEBRIS)) {
     if (s.name) names.add(s.name)
   }
   return names
