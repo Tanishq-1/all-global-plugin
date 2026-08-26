@@ -7,9 +7,13 @@ export function lsRemote(url) {
   return r.status === 0 ? (r.stdout.split('\t')[0] ?? '').trim() || null : null
 }
 
+export function cloneArgs(url, pin) {
+  return ['-c', 'core.longpaths=true',
+          'clone', '--depth', '1', ...(pin ? ['--branch', pin] : []), url]
+}
+
 export function clone(url, pin, dest) {
-  const args = ['clone', '--depth', '1', ...(pin ? ['--branch', pin] : []), url, dest]
-  const r = run(args)
+  const r = run([...cloneArgs(url, pin), dest])
   if (r.status !== 0) throw new Error(`git clone failed for ${url}: ${r.stderr}`)
 }
 

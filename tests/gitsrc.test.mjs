@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { lsRemote } from '../scripts/lib/gitsrc.mjs'
+import { lsRemote, cloneArgs } from '../scripts/lib/gitsrc.mjs'
 
 test('lsLocalRepo roundtrip: init, commit, headSha reads it', async (t) => {
   const { headSha, commitAll } = await import('../scripts/lib/gitsrc.mjs')
@@ -17,4 +17,11 @@ test('lsLocalRepo roundtrip: init, commit, headSha reads it', async (t) => {
 
 test('lsRemote returns null for unreachable url', () => {
   assert.equal(lsRemote('https://invalid.invalid/nope.git'), null)
+})
+
+test('cloneArgs passes core.longpaths so deep upstream trees check out on Windows', () => {
+  assert.deepEqual(cloneArgs('https://x/y', null),
+    ['-c', 'core.longpaths=true', 'clone', '--depth', '1', 'https://x/y'])
+  assert.deepEqual(cloneArgs('https://x/y', 'v1'),
+    ['-c', 'core.longpaths=true', 'clone', '--depth', '1', '--branch', 'v1', 'https://x/y'])
 })
