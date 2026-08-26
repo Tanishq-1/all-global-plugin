@@ -1,3 +1,4 @@
 node_modules/
 paths.local.json
+.superpowers/
 universal-plugin/**/*.old-*

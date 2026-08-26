@@ -3,13 +3,14 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runUpdate } from '../scripts/cmd/update.mjs'
 
-const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor'])
+const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
   '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--dry-run]',
   '       agp remove --plugin N [--dry-run]',
   '       agp status',
   '       agp doctor',
+  '       agp index',
 ].join('\n')
 const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry'])
 const BOOL_FLAGS = new Set(['all', 'dry-run'])
@@ -80,6 +81,10 @@ async function main() {
       }
     }
     return
+  }
+  if (cmd === 'index') {
+    const { writeIndex } = await import('../scripts/cmd/index.mjs')
+    writeIndex({ repoRoot }); return
   }
   if (cmd === 'doctor') {
     const { runDoctor } = await import('../scripts/cmd/inspect.mjs')
