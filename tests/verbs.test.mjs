@@ -1,0 +1,66 @@
+// tests/verbs.test.mjs
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { execFileSync } from 'node:child_process'
+
+function fixtureRepo() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-verbs-'))
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root })
+  const up = path.join(root, 'upstream')
+  const sk = path.join(up, 'skills', 'one')
+  fs.mkdirSync(sk, { recursive: true })
+  fs.writeFileSync(path.join(sk, 'SKILL.md'), '---\nname: one\ndescription: one\n---\n')
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: up })
+  execFileSync('git', ['-C', up, 'add', '-A'])
+  execFileSync('git', ['-C', up, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'v1'])
+  fs.writeFileSync(path.join(root, 'plugins.json'), JSON.stringify(
+    { version: 2, plugin_dir: 'universal-plugin', targets: {}, plugins: [] }))
+  fs.mkdirSync(path.join(root, 'universal-plugin'), { recursive: true })
+  process.chdir(root)
+  return root
+}
+
+test('add installs through update and persists manifest entry', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  const res = await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                             category: '_universal', tier: 'oss', dryRun: false })
+  assert.equal(res.ok, true, res.error)
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+  assert.equal(m.plugins.length, 1)
+  assert.equal(fs.existsSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'one')), true)
+})
+
+test('add rolls manifest back when install fails', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  const res = await runAdd({ repoRoot: root, name: 'two', url: 'https://invalid.invalid/x.git',
+                             category: '_universal', tier: 'oss', dryRun: false })
+  assert.equal(res.ok, false)
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+  assert.equal(m.plugins.length, 0)
+})
+
+test('remove drops manifest entry but keeps folder', async () => {
+  const root = fixtureRepo()
+  const { runAdd, runRemove } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  runRemove({ repoRoot: root, name: 'one', dryRun: false })
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+  assert.equal(m.plugins.length, 0)
+  assert.equal(fs.existsSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'one')), true)
+})
+
+test('doctor flags orphan folders; status lists installed', async () => {
+  const root = fixtureRepo()
+  fs.mkdirSync(path.join(root, 'universal-plugin', 'frontend', 'official', 'ghost'), { recursive: true })
+  const { runDoctor, runStatus } = await import('../scripts/cmd/inspect.mjs')
+  const d = runDoctor({ repoRoot: root })
+  assert.ok(d.problems.some(p => p.includes('ghost')))
+  const rows = runStatus({ repoRoot: root })
+  assert.ok(Array.isArray(rows))
+})
