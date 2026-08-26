@@ -164,6 +164,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "sf-skills",
+      "category": "salesforce",
+      "tier": "oss",
+      "url": "https://github.com/forcedotcom/sf-skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }

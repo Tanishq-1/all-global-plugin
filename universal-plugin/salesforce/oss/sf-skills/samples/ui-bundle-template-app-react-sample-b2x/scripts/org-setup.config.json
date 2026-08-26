@@ -1,0 +1,26 @@
+{
+  "permsetAssignments": {
+    "assignments": {
+      "Property_Management_Access": {
+        "assignee": "currentUser"
+      },
+      "Tenant_Maintenance_Access": {
+        "assignee": "skip"
+      },
+      "Property_Rental_Guest_User_Access": {
+        "assignee": "guestUser"
+      },
+      "propertyrentalapp_Guest_User_Api_Access": {
+        "assignee": "guestUser"
+      }
+    }
+  },
+  "role": {
+    "assignee": "currentUser",
+    "roleName": "Admin"
+  },
+  "selfRegistration": {
+    "selfRegProfile": "Property Rental Prospect Profile",
+    "accountName": "Property Rental Self-Registration"
+  }
+}

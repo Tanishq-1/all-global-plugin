@@ -59,6 +59,12 @@
       "upstream_commit_sha": "fa01c311406ba644e59463318a66f359890105c3",
       "snapshot_commit": "fa01c311406ba644e59463318a66f359890105c3",
       "last_updated": "2026-08-26T11:28:39.453Z"
+    },
+    "sf-skills": {
+      "version": "1.42.0",
+      "upstream_commit_sha": "49064f740d329f3d637df151321efa644b619a2e",
+      "snapshot_commit": "49064f740d329f3d637df151321efa644b619a2e",
+      "last_updated": "2026-08-26T11:31:51.282Z"
     }
   }
 }

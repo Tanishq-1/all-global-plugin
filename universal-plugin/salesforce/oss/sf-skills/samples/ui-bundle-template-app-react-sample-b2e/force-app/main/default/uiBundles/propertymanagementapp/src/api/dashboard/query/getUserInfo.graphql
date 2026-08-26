@@ -1,0 +1,10 @@
+query GetUserInfo {
+	uiapi {
+		currentUser {
+			Id
+			Name @optional {
+				value
+			}
+		}
+	}
+}
