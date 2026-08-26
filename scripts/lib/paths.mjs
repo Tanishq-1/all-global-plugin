@@ -27,9 +27,14 @@ const DEFAULTS = {
   qwen: () => path.join(os.homedir(), '.qwen', 'skills'),
 }
 
+function resolved(name, p) {
+  if (typeof p !== 'string' || p === '') throw new Error(`target '${name}' did not resolve to a path`)
+  return p
+}
+
 export function targetPath(name, manifestTargets = {}, localOverrides = {}) {
-  if (localOverrides[name] !== undefined) return expandHome(pick(localOverrides[name]))
-  if (manifestTargets?.[name] !== undefined) return expandHome(pick(manifestTargets[name]))
+  if (localOverrides[name] !== undefined) return resolved(name, expandHome(pick(localOverrides[name])))
+  if (manifestTargets?.[name] !== undefined) return resolved(name, expandHome(pick(manifestTargets[name])))
   if (!DEFAULTS[name]) throw new Error(`unknown target: ${name}`)
   return DEFAULTS[name]()
 }

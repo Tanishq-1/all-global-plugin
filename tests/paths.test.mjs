@@ -36,3 +36,8 @@ test('local overrides win over manifest targets', () => {
                                    { opencode: '~/.mine/oc.jsonc' })
   assert.ok(got.endsWith('oc.jsonc') && got.includes('.mine'))
 })
+
+test('targetPath throws on object override with no path keys', () => {
+  assert.throws(() => targetPath('opencode', {}, { opencode: { other_key: 'x' } }),
+                /did not resolve to a path/)
+})
