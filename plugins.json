@@ -136,6 +136,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "expo-skills",
+      "category": "mobile",
+      "tier": "oss",
+      "url": "https://github.com/expo/skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
