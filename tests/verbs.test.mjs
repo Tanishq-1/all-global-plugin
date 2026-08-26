@@ -55,6 +55,24 @@ test('remove drops manifest entry but keeps folder', async () => {
   assert.equal(fs.existsSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'one')), true)
 })
 
+test('add rolls manifest back when install throws unexpectedly', async () => {
+  const root = fixtureRepo()
+  const manage = await import('../scripts/cmd/manage.mjs')
+  const real = manage._runUpdate.call
+  manage._runUpdate.call = async () => { throw new Error('disk exploded') }
+  try {
+    const res = await manage.runAdd({ repoRoot: root, name: 'boom',
+                                      url: 'https://invalid.invalid/x.git',
+                                      category: '_universal', tier: 'oss', dryRun: false })
+    assert.equal(res.ok, false)
+    assert.match(res.error, /install failed for boom; manifest rolled back \(disk exploded\)/)
+    const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+    assert.equal(m.plugins.length, 0)
+  } finally {
+    manage._runUpdate.call = real
+  }
+})
+
 test('doctor flags orphan folders; status lists installed', async () => {
   const root = fixtureRepo()
   fs.mkdirSync(path.join(root, 'universal-plugin', 'frontend', 'official', 'ghost'), { recursive: true })

@@ -5,6 +5,8 @@ import { loadManifest } from '../lib/manifest.mjs'
 import { readState, writeState } from '../lib/state.mjs'
 import { runUpdate } from './update.mjs'
 
+export const _runUpdate = { call: runUpdate }
+
 export function saveManifest(repoRoot, m) {
   fs.writeFileSync(path.join(repoRoot, 'plugins.json'), JSON.stringify(m, null, 2) + '\n')
 }
@@ -22,7 +24,17 @@ export async function runAdd({ repoRoot, name, url, category, tier,
     manifest.plugins.push(entry)
     saveManifest(repoRoot, manifest)
   }
-  const res = await runUpdate({ repoRoot, name, category: null, dryRun })
+  let res
+  try {
+    res = await _runUpdate.call({ repoRoot, name, category: null, dryRun })
+  } catch (err) {
+    if (!dryRun) {
+      const m2 = loadManifest(repoRoot)
+      m2.plugins = m2.plugins.filter(p => p.name !== name)
+      saveManifest(repoRoot, m2)
+    }
+    return { ok: false, error: `install failed for ${name}; manifest rolled back (${err.message})` }
+  }
   if (res.failed.length) {
     if (!dryRun) {
       const m2 = loadManifest(repoRoot)
