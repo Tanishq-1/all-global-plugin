@@ -2,11 +2,21 @@
   "version": 2,
   "plugin_dir": "universal-plugin",
   "targets": {
-    "claude": { "settings_path": "~/.claude/settings.json" },
-    "opencode": { "config_path": "~/.config/opencode/opencode.jsonc" },
-    "bridge": { "path": "~/.agents/skills" },
-    "cursor": { "path": "~/.cursor/skills" },
-    "qwen": { "path": "~/.qwen/skills" },
+    "claude": {
+      "settings_path": "~/.claude/settings.json"
+    },
+    "opencode": {
+      "config_path": "~/.config/opencode/opencode.jsonc"
+    },
+    "bridge": {
+      "path": "~/.agents/skills"
+    },
+    "cursor": {
+      "path": "~/.cursor/skills"
+    },
+    "qwen": {
+      "path": "~/.qwen/skills"
+    },
     "mcp": {
       "codex": "~/.codex/config.toml",
       "cursor": "~/.cursor/mcp.json",
@@ -14,5 +24,20 @@
       "qwen": "~/.qwen/settings.json"
     }
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "superpowers",
+      "category": "_universal",
+      "tier": "oss",
+      "url": "https://github.com/obra/superpowers",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
+    }
+  ]
 }
