@@ -38,6 +38,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "karpathy-skills",
+      "category": "_universal",
+      "tier": "oss",
+      "url": "https://github.com/multica-ai/andrej-karpathy-skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }

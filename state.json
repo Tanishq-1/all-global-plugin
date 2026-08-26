@@ -5,6 +5,12 @@
       "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
       "snapshot_commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
       "last_updated": "2026-08-26T11:25:32.567Z"
+    },
+    "karpathy-skills": {
+      "version": "1.0.0",
+      "upstream_commit_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2",
+      "snapshot_commit": "2c606141936f1eeef17fa3043a72095b4765b9c2",
+      "last_updated": "2026-08-26T11:25:45.291Z"
     }
   }
 }
