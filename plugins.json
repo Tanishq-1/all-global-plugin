@@ -52,6 +52,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "mattpocock-skills",
+      "category": "_universal",
+      "tier": "oss",
+      "url": "https://github.com/mattpocock/skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
