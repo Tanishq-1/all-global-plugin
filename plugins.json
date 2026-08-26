@@ -150,6 +150,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "azure-skills",
+      "category": "cloud",
+      "tier": "oss",
+      "url": "https://github.com/microsoft/azure-skills",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
