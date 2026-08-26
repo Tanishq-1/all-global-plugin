@@ -35,7 +35,7 @@ from `SKILL.md` frontmatter and is globally unique.
 
 ## Quickstart
 
-Requires Node.js ≥ 18 and git.
+Requires Node.js ≥ 21 and git.
 
 ```bash
 git clone <this-repo-url> && cd All-Global-Plugin
