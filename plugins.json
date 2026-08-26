@@ -66,6 +66,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "prompts-chat",
+      "category": "_universal",
+      "tier": "oss",
+      "url": "https://github.com/f/prompts.chat",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": "plugins/claude/prompts.chat",
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }

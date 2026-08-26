@@ -17,6 +17,12 @@
       "upstream_commit_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
       "snapshot_commit": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
       "last_updated": "2026-08-26T11:25:52.686Z"
+    },
+    "prompts-chat": {
+      "version": "0.1.0",
+      "upstream_commit_sha": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
+      "snapshot_commit": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
+      "last_updated": "2026-08-26T11:26:23.372Z"
     }
   }
 }
