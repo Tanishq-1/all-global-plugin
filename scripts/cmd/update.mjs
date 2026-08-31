@@ -2,13 +2,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { loadManifest } from '../lib/manifest.mjs'
-import { lsRemote, clone, headSha, commitAll } from '../lib/gitsrc.mjs'
+import { lsRemote, clone, headSha, commitAll, createTag } from '../lib/gitsrc.mjs'
 import { runGates } from '../lib/gates.mjs'
 import { quarantine } from '../lib/quarantine.mjs'
 import { stageDir, stripGit, swapIn } from '../lib/atomic.mjs'
 import { pluginDest, collectExistingSkillNames } from '../lib/layout.mjs'
 import { discoverSkills } from '../lib/discover.mjs'
-import { recordUpdate } from '../lib/state.mjs'
+import { recordUpdate, appendHistory, recordBatch, readState } from '../lib/state.mjs'
 import { readLocal, isEnabled } from '../lib/local.mjs'
 
 function selectPlugins(manifest, { name, category }) {
@@ -33,13 +33,20 @@ function reValidate(dest) {
   if (g.failures.some(f => f.gate === 'structure')) throw new Error('post-swap validation failed')
 }
 
-export async function runUpdate({ repoRoot, name = null, category = null, dryRun = false }) {
+export async function runUpdate({ repoRoot, name = null, category = null, dryRun = false, recordBatch: wantBatch = true }) {
   const manifest = loadManifest(repoRoot)
   const updated = [], skipped = [], failed = []
+  const preFields = {}
+  let pre = null
+  const state0 = readState(repoRoot)
   for (const entry of selectPlugins(manifest, { name, category })) {
     const dest = pluginDest(repoRoot, entry)
     console.log(`update: ${entry.name}${dryRun ? ' (dry-run)' : ''}`)
     if (dryRun) { skipped.push(entry.name); continue }
+    preFields[entry.name] = {
+      pre_version: state0.plugins?.[entry.name]?.version ?? null,
+      pre_upstream_sha: state0.plugins?.[entry.name]?.upstream_commit_sha ?? null,
+    }
     const reach = lsRemote(entry.url)
     if (!reach) {
       failed.push(entry.name)
@@ -83,14 +90,32 @@ export async function runUpdate({ repoRoot, name = null, category = null, dryRun
     } catch (e) {
       failed.push(entry.name); console.error(`  swap failed: ${e.message}`); continue
     }
+    const version = readVersion(dest)
+    const ts = new Date().toISOString()
+    if (pre === null) pre = headSha(repoRoot) ?? undefined
     recordUpdate(repoRoot, entry.name, {
-      version: readVersion(dest),
+      version,
       upstream_commit_sha: reach,
-      snapshot_commit: reach,
-      last_updated: new Date().toISOString(),
+      snapshot_commit: 'pending',
+      last_updated: ts,
     })
-    commitAll(repoRoot, `Update ${entry.name} → ${readVersion(dest) ?? 'n/a'} (${String(reach).slice(0, 7)})`)
+    const sha = commitAll(repoRoot, `Update ${entry.name} → ${version ?? 'n/a'} (${String(reach).slice(0, 7)})`)
+    recordUpdate(repoRoot, entry.name, { snapshot_commit: sha })
+    appendHistory(repoRoot, entry.name, {
+      repo_commit: sha, version, upstream_commit_sha: reach, ts,
+    })
     updated.push(entry.name)
+  }
+  if (!dryRun && updated.length && wantBatch) {
+    const id = `batch/${new Date().toISOString().replaceAll(':', '-')}`
+    const at = new Date().toISOString()
+    recordBatch(repoRoot, { id, pre, post: headSha(repoRoot), at, tag: id, plugins: preFields })
+    commitAll(repoRoot, `Record batch ${id} — ${updated.join(', ')}`)
+    try {
+      createTag(repoRoot, id, `agp batch: ${updated.length} plugin${updated.length === 1 ? '' : 's'}`)
+    } catch (e) {
+      console.warn(`  warning: could not create tag ${id}: ${e.message}`)
+    }
   }
   return dryRun ? { updated, skipped, failed, dryRun: true } : { updated, skipped, failed }
 }

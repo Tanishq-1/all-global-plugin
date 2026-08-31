@@ -28,7 +28,7 @@ export async function runAdd({ repoRoot, name, url, category, tier,
   }
   let res
   try {
-    res = await _runUpdate.call({ repoRoot, name, category: null, dryRun })
+    res = await _runUpdate.call({ repoRoot, name, category: null, dryRun, recordBatch: false })
   } catch (err) {
     if (!dryRun) {
       const m2 = loadManifest(repoRoot)

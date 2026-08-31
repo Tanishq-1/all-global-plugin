@@ -33,4 +33,26 @@ export function commitAll(dir, message) {
   if (r.status !== 0 && !/nothing( added)? to commit/.test(r.stdout + r.stderr)) {
     throw new Error(`git commit failed: ${r.stderr}`)
   }
+  return r.status === 0 ? headSha(dir) : null
+}
+
+export function createTag(repoRoot, name, message) {
+  const r = run(['-C', repoRoot, 'tag', '-a', name, '-m', message])
+  if (r.status !== 0) throw new Error(`git tag failed for ${name}: ${r.stderr}`)
+}
+
+export function listCommits(repoRoot, p) {
+  const r = run(['-C', repoRoot, 'log', '--format=%H', '--', p])
+  if (r.status !== 0) throw new Error(`git log failed for ${p}: ${r.stderr}`)
+  return r.stdout.trim().split('\n').filter(Boolean)
+}
+
+export function showFile(repoRoot, sha, file) {
+  const r = run(['-C', repoRoot, 'show', `${sha}:${file}`])
+  return r.status === 0 ? r.stdout : null
+}
+
+export function checkoutPaths(repoRoot, sha, paths) {
+  const r = run(['-C', repoRoot, 'checkout', sha, '--', ...paths])
+  if (r.status !== 0) throw new Error(`git checkout failed: ${r.stderr}`)
 }
