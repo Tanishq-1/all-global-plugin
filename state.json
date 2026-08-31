@@ -65,6 +65,12 @@
       "upstream_commit_sha": "49064f740d329f3d637df151321efa644b619a2e",
       "snapshot_commit": "49064f740d329f3d637df151321efa644b619a2e",
       "last_updated": "2026-08-26T11:31:51.282Z"
+    },
+    "ecc": {
+      "version": "2.2.0",
+      "upstream_commit_sha": "005eff40fd4a4ac005da7a70e713459175385516",
+      "snapshot_commit": "005eff40fd4a4ac005da7a70e713459175385516",
+      "last_updated": "2026-08-31T05:57:13.905Z"
     }
   }
 }

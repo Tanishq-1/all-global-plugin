@@ -178,6 +178,21 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "ecc",
+      "category": "_universal",
+      "tier": "oss",
+      "url": "https://github.com/affaan-m/ecc",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ],
+      "enabled_by_default": false
     }
   ]
 }
