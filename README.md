@@ -70,7 +70,7 @@ the clone instead of importing it.
 | `index` | `agp index` | Regenerate `INDEX.md` from `plugins.json` |
 | `enable` | `agp enable --plugin N` | Activate plugin in your `local.json` (manifest untouched) |
 | `disable` | `agp disable --plugin N` | Deactivate plugin in your `local.json` (manifest untouched) |
-| `sync` | `agp sync --all\|--tool T\|--plugin N\|--category C [--dry-run]` | Push active plugins into all adopted tool configs/junction roots |
+| `sync` | `agp sync --all\|--tool T\|--plugin N\|--category C [--dry-run]` — tools: `bridge\|claude\|opencode\|gemini\|qwen\|mcp\|codex\|windsurf\|q` | Push active plugins into all adopted tool configs/junction roots |
 | `rollback` | `agp rollback --plugin N [--to SHA] \| agp rollback --batch last\|<id> [--dry-run]` | Restore a plugin folder (or a whole update batch) to a previous state |
 
 Unknown or missing commands print a usage line to stderr and exit with code 2;
@@ -150,8 +150,12 @@ modified; every rollback path supports `--dry-run`.
   (`batch/<utc-timestamp>` annotated tags + `state.json` batch records on every update
   run), per-plugin rollback (`agp rollback --plugin N [--to SHA]`) and whole-batch
   rollback (`agp rollback --batch last|<id>`).
-- **Phase 4 — Automation**: weekly GitHub Actions workflow
-  (`maintain.yml`: doctor → update → sync → changelog → tag batch).
+- **Phase 3 Part 2 — Cross-tool compatibility**: ✅ complete. Codex CLI TOML adapter
+  (`~/.codex/config.toml` managed marker block), Windsurf (`mcp_config.json`) and
+  Amazon Q (`~/.aws/amazonq/mcp.json`) MCP targets, sync/doctor/CLI wiring for all
+  three, plus the whole-catalog compatibility matrix
+  ([`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md)) and the Phase 4 testing strategy
+  ([`docs/TESTING-STRATEGY.md`](docs/TESTING-STRATEGY.md)).
 - **Phase 4 — Automation**: weekly GitHub Actions workflow
   (`maintain.yml`: doctor → update → sync → changelog → tag batch).
 
@@ -183,7 +187,16 @@ config locations.
 | `~/.config/opencode/opencode.jsonc` | `// agp:skills-start/end` managed block | file must exist |
 | `~/.gemini/skills` + `~/.gemini/antigravity-cli/skills` | junctions, dual-path | roots created on demand |
 | `~/.qwen/skills` | junctions | root created on demand |
+| `~/.codex/config.toml` | `# agp:mcp-start/end` managed TOML block, `[mcp_servers.<name>]` tables (stdio servers only) | file must exist |
+| `~/.codeium/windsurf/mcp_config.json` | `mcpServers` merge from plugin `.mcp.json` | file must exist |
+| `~/.aws/amazonq/mcp.json` | `mcpServers` merge from plugin `.mcp.json` | file must exist |
 | `~/.cursor/mcp.json`, `~/.gemini/settings.json`, `~/.qwen/settings.json` | `mcpServers` merge from plugin `.mcp.json` | file must exist |
+
+Cross-tool compatibility: every tool in the
+[AI coding tools catalog](ai_coding_tools_and_ides_catalog.md) is mapped — synced, bridge-consumer,
+needs-verification, or not-applicable — in [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
+The Phase 4 testing strategy (error handling, test plan, scenario matrix) lives in
+[`docs/TESTING-STRATEGY.md`](docs/TESTING-STRATEGY.md).
 
 Safety rules on every target: user entries are preserved and never clobbered;
 stale agp-owned entries (marked `source:"agp"` or resolving inside the repo) are

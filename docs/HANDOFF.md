@@ -1,6 +1,6 @@
 # All-Global-Plugin — Session Handoff
 
-> **Date:** 2026-08-31 | **Repo:** `D:\Agentic coding\Project\All-Global-Plugin` | **Branch:** `main`
+> **Date:** 2026-09-01 | **Repo:** `D:\Agentic coding\Project\All-Global-Plugin` | **Branch:** `main`
 > **Purpose:** Complete session capture for human and AI consumers. Covers project context, completed work, verification, and sequenced future tasks.
 
 ---
@@ -81,7 +81,7 @@ Manifest v2 CLI, 4 validation gates, atomic swap, quarantine, 11 plugins seeded 
 
 ### Test trajectory
 
-48 (Phase 1) → 53 (P2-1) → 59 (P2-2) → 63 (P2-3) → 68 (P2-4) → 74 (P2-5) → 79 (P2-6) → 85 (P2-7) → **104 (Phase 3)** — all green.
+48 (Phase 1) → 53 (P2-1) → 59 (P2-2) → 63 (P2-3) → 68 (P2-4) → 74 (P2-5) → 79 (P2-6) → 85 (P2-7) → 104 (Phase 3) → **121 (Phase 3 Part 2)** — all green.
 
 ---
 
@@ -98,26 +98,48 @@ Full CLI loop in a throwaway git repo: `add → update (upstream v2) → rollbac
 
 ---
 
+## Phase 3 Part 2 — Cross-Tool Compatibility (complete — commits `3a2ea2c` through docs commit, 2026-09-01)
+
+Driven by the user-provided catalog `ai_coding_tools_and_ides_catalog.md` (30+ AI IDEs, 110+ AI CLIs, committed as reference). Research phase verified external config formats via web sources (Codex TOML `[mcp_servers.<name>]` tables; Windsurf `~/.codeium/windsurf/mcp_config.json` JSON `mcpServers`; Amazon Q `~/.aws/amazonq/mcp.json` JSON `mcpServers`). Zed (`context_servers`) and Crush (`mcp_servers`) formats remain unverified → documented, not implemented.
+
+- **P3.5-1 Codex TOML adapter** (`3a2ea2c`) — `scripts/lib/toml.mjs` (minimal emitter: `emitServerTable`/`emitMcpBlock`/`extractManagedBlock`/`serverNamesInBlock`/`replaceManagedBlock`; never parses user TOML) + `scripts/lib/adapters/codex.mjs` `syncCodex({repoRoot, plugins, home, dryRun})`: `~/.codex/config.toml` (CODEX_HOME-aware), adoption gate, `# agp:mcp-start/end` managed block, stdio servers only (url/http skipped with warning), block-equality idempotency (no rewrite when unchanged), `.bak-<ts>`, `${VAR}` env strings. Tests: `tests/codex-adapter.test.mjs` (8).
+- **P3.5-2 Windsurf + Amazon Q** (`ea73b56`) — `targetFile()` += `windsurf` (`~/.codeium/windsurf/mcp_config.json`) and `q` (`~/.aws/amazonq/mcp.json`); `syncMcp` default targets now `['cursor','gemini','qwen','windsurf','q']`; `paths.mjs` DEFAULTS += `windsurf`, `q` (local.json override chain applies). `syncJsonTarget` reused verbatim. Tests: mcp-adapter extended (8 total).
+- **P3.5-3 Wiring** (`aad3168`) — `TOOL_KEYS` = 9 keys (`bridge|claude|opencode|gemini|qwen|mcp|codex|windsurf|q`); `runSync`: `codex` via homeOpts, `windsurf`/`q` as separate tool keys calling `syncMcp({targets:['windsurf'|'q']})`, `mcp` key keeps legacy trio; drift doctor: codex block gated on `~/.codex` existing (emits `drift [codex]`), windsurf/q drift as `drift [mcp/windsurf]`/`drift [mcp/q]`; `bin/agp.mjs` tool-list error updated. Tests: sync +4, verbs +2.
+- **P3.5-4/P3.5-5 Docs** — `docs/COMPATIBILITY.md` (whole-catalog matrix: 10 synced targets, bridge consumers, needs-verification backlog with probe plans, not-applicable categories; 8 compatibility issues incl. MCP server-name collisions last-wins, Codex TOML env semantics, Windows path separators, Zed schema constraints; recommended solutions) and `docs/TESTING-STRATEGY.md` (error-handling procedures per failure mode, 5-step test plan, 15-scenario matrix with 2 identified gaps — read-only config, junction permission denied — flagged as Phase 4 test additions, team responsibility mapping, Phase 4 automation guardrails).
+- **P3.5-6** — README sync-targets table + 3 rows, tool list in sync verb row, Phase 3 Part 2 roadmap entry, links to both docs; duplicated Phase 4 roadmap line removed; this handoff section.
+
+Test trajectory this part: 104 → 112 (codex) → 115 (targets) → **121 (wiring)** — all green. Live real-profile smoke deferred to Phase 4 per TESTING-STRATEGY.md dry-run-first discipline.
+
+---
+
 ## Future Tasks
 
 - **Phase 4 — Automation (not yet planned)**
   - **Objective:** Weekly GitHub Actions workflow `maintain.yml`: `doctor → update --all → sync --all → changelog → status → commit → push → tag batch`. No force-push, no third-party bots.
-  - **Next steps:** Author plan `docs/superpowers/plans/<date>-phase4-automation.md`, implement `.github/workflows/maintain.yml` (cron weekly), `release-notes/<name>-<ts>.md` generation from `state.json` deltas, changelog, CI smoke checks (validate manifest + structures + uniqueness on every push). Reference spec §7.
+  - **Next steps:** Author plan `docs/superpowers/plans/<date>-phase4-automation.md`, implement `.github/workflows/maintain.yml` (cron weekly), `release-notes/<name>-<ts>.md` generation from `state.json` deltas, changelog, CI smoke checks (validate manifest + structures + uniqueness on every push). Reference spec §7 and `docs/TESTING-STRATEGY.md` §2.5 (test-plan) + §5 (automation guardrails).
+
+- **Compatibility backlog (from Phase 3 Part 2 research — see docs/COMPATIBILITY.md §3)**
+  - Zed adapter: verify `~/.config/zed/settings.json` `context_servers` shape; JSON (no comments) + no documented ownership field → needs registry/sidecar ownership design before writing.
+  - Crush adapter: verify `~/.config/crush/crush.json` `mcp_servers` shape against a live install.
+  - Trae / PearAI / Void / Wave / JetBrains AI / Amazon Q IDE: locate + verify MCP/skills config surfaces (probe plan in COMPATIBILITY.md §3).
+  - MCP collision warning + `mcp_server_prefix` manifest option (COMPATIBILITY.md §5.1).
 
 - **Deferred small items**
-  - MCP emitter: Codex `~/.codex/config.toml` TOML target (spec §5 lists it; only cursor/gemini/qwen JSON targets implemented).
+  - Scenario-matrix test gaps: read-only/locked target config; junction permission denied (TESTING-STRATEGY.md §3 #4/#12).
+  - Codex streamable-http servers in TOML once upstream documents URL semantics (currently stdio-only).
   - `agp enable --plugin ecc` live smoke on the real profile (fixture-verified only so far).
   - GitHub-search-assisted `add` (user provides URL today; search UX post-Phase-2 per plan out-of-scope).
 
 ### Resume Sequence
 
 1. Author and execute Phase 4 plan (automation: `maintain.yml` weekly loop).
-2. Optional: Codex TOML MCP target; real-profile `sync --dry-run` smoke; `agp enable --plugin ecc` live smoke.
+2. Optional: real-profile `sync --all --dry-run` smoke incl. the three new targets; `agp enable --plugin ecc` live smoke; Zed/Crush format verification when those tools are installed.
 
 ### Key Files to Read Before Continuing
 
 - `docs/superpowers/specs/2026-08-26-all-global-plugin-design.md` — architecture + adapter matrix
 - `docs/superpowers/plans/2026-08-27-phase2-sync-adapters.md` — executed Phase 2 plan
 - `docs/superpowers/plans/2026-08-31-phase3-rollback.md` — executed Phase 3 plan
+- `docs/COMPATIBILITY.md` + `docs/TESTING-STRATEGY.md` — Phase 3 Part 2 outputs
 - `plugins.json` + `state.json` + `bin/agp.mjs` + `scripts/lib/*.mjs` + `scripts/lib/adapters/*.mjs` + `scripts/cmd/*.mjs` + `tests/*.test.mjs`
 - `git log --oneline -20` and `git show --stat HEAD` for recent changes
