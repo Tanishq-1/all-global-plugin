@@ -122,3 +122,29 @@ test('doctor stays silent when target configs absent (adoption gate)', async () 
   const d = runDoctor({ repoRoot: root, home: h })
   assert.equal(d.problems.some(p => p.includes('drift')), false, JSON.stringify(d.problems))
 })
+
+test('add allows duplicate skill names for enabled_by_default:false plugin', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  const res = await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                             category: '_universal', tier: 'oss', dryRun: false })
+  assert.equal(res.ok, true, res.error)
+  // add a second plugin with a DUPLICATE skill name, but disabled by default
+  const up2 = path.join(root, 'upstream2')
+  const sk2 = path.join(up2, 'skills', 'one')
+  fs.mkdirSync(sk2, { recursive: true })
+  fs.writeFileSync(path.join(sk2, 'SKILL.md'), '---\nname: one\ndescription: dup\n---\n')
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: up2 })
+  execFileSync('git', ['-C', up2, 'add', '-A'])
+  execFileSync('git', ['-C', up2, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'v1'])
+  const res2 = await runAdd({ repoRoot: root, name: 'one-dup', url: up2.replace(/\\/g, '/'),
+                             category: '_universal', tier: 'oss', dryRun: false,
+                             enabledByDefault: false })
+  assert.equal(res2.ok, true, res2.error)
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'plugins.json'), 'utf8'))
+  assert.equal(m.plugins.find(p => p.name === 'one-dup').enabled_by_default, false)
+  // sanity: duplicate name would still collide if it were enabled
+  const { collectExistingSkillNames } = await import('../scripts/lib/layout.mjs')
+  const names = collectExistingSkillNames(root)
+  assert.ok(names.has('one'))
+})

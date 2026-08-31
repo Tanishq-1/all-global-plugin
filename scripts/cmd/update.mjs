@@ -9,6 +9,7 @@ import { stageDir, stripGit, swapIn } from '../lib/atomic.mjs'
 import { pluginDest, collectExistingSkillNames } from '../lib/layout.mjs'
 import { discoverSkills } from '../lib/discover.mjs'
 import { recordUpdate } from '../lib/state.mjs'
+import { readLocal, isEnabled } from '../lib/local.mjs'
 
 function selectPlugins(manifest, { name, category }) {
   if (name) return manifest.plugins.filter(p => p.name === name)
@@ -45,8 +46,22 @@ export async function runUpdate({ repoRoot, name = null, category = null, dryRun
       console.error(`  unreachable upstream: ${entry.url}`)
       continue
     }
-    const existingNames = collectExistingSkillNames(repoRoot)
-    for (const s of discoverSkills(dest)) if (s.name) existingNames.delete(s.name)
+    // uniqueness matters only for skills that will actually sync: a disabled
+    // plugin never lands in any target, so its names (and collisions) are inert
+    const local = readLocal(repoRoot)
+    let existingNames
+    if (isEnabled(entry, local)) {
+      existingNames = collectExistingSkillNames(repoRoot)
+      for (const p2 of manifest.plugins) {
+        if (p2 === entry || isEnabled(p2, local)) continue
+        for (const s of discoverSkills(pluginDest(repoRoot, p2))) {
+          if (s.name) existingNames.delete(s.name)
+        }
+      }
+      for (const s of discoverSkills(dest)) if (s.name) existingNames.delete(s.name)
+    } else {
+      existingNames = new Set()
+    }
     const staged = stageDir(dest)
     try {
       clone(entry.url, entry.pin, staged)

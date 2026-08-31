@@ -12,7 +12,8 @@ export function saveManifest(repoRoot, m) {
 }
 
 export async function runAdd({ repoRoot, name, url, category, tier,
-                               marketplaceKey = null, skillEntry = null, dryRun = false }) {
+                               marketplaceKey = null, skillEntry = null,
+                               enabledByDefault = true, dryRun = false }) {
   const manifest = loadManifest(repoRoot)
   if (manifest.plugins.some(p => p.name === name)) {
     return { ok: false, error: `plugin already present: ${name}` }
@@ -20,6 +21,7 @@ export async function runAdd({ repoRoot, name, url, category, tier,
   const entry = { name, category, tier, url, pin: null, wrapper: false,
                   skill_entry: skillEntry,
                   plugin_keys: [], marketplace_key: marketplaceKey, platforms: ['*'] }
+  if (!enabledByDefault) entry.enabled_by_default = false
   if (!dryRun) {
     manifest.plugins.push(entry)
     saveManifest(repoRoot, manifest)

@@ -6,7 +6,7 @@ import { runUpdate } from '../scripts/cmd/update.mjs'
 const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable', 'sync'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
-  '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--dry-run]',
+  '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--disabled] [--dry-run]',
   '       agp remove --plugin N [--dry-run]',
   '       agp status',
   '       agp doctor',
@@ -15,7 +15,7 @@ const USAGE = [
   '       agp sync [--all|--tool T|--plugin N|--category C] [--dry-run]',
 ].join('\n')
 const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry', 'tool'])
-const BOOL_FLAGS = new Set(['all', 'dry-run'])
+const BOOL_FLAGS = new Set(['all', 'dry-run', 'disabled'])
 
 export function parseArgs(argv) {
   const args = { _: [] }
@@ -69,6 +69,7 @@ async function main() {
                                  category: args.category, tier: args.tier ?? 'oss',
                                  marketplaceKey: args['marketplace-key'] ?? null,
                                  skillEntry: args['skill-entry'] ?? null,
+                                 enabledByDefault: args.disabled ? false : true,
                                  dryRun: !!args['dry-run'] })
       console.log(JSON.stringify(res))
       process.exitCode = res.ok ? 0 : 1
