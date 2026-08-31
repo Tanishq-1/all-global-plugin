@@ -94,3 +94,31 @@ test('doctor flags orphan folders; status lists installed', async () => {
   const rows = runStatus({ repoRoot: root })
   assert.ok(Array.isArray(rows))
 })
+
+test('doctor reports sync drift against target configs', async () => {
+  const root = fixtureRepo()
+  const { runAdd, runRemove } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  const h = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-doc-'))
+  fs.mkdirSync(path.join(h, '.claude'), { recursive: true })
+  fs.writeFileSync(path.join(h, '.claude', 'settings.json'), '{}')
+  const { runDoctor } = await import('../scripts/cmd/inspect.mjs')
+  const d = runDoctor({ repoRoot: root, home: h })
+  assert.ok(d.problems.some(p => p.includes('drift') && p.includes('claude')), JSON.stringify(d.problems))
+  const { runSync } = await import('../scripts/cmd/sync.mjs')
+  await runSync({ repoRoot: root, tool: 'claude', dryRun: false, home: h })
+  const d2 = runDoctor({ repoRoot: root, home: h })
+  assert.equal(d2.problems.some(p => p.includes('drift')), false, JSON.stringify(d2.problems))
+})
+
+test('doctor stays silent when target configs absent (adoption gate)', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  const h = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-doc2-'))
+  const { runDoctor } = await import('../scripts/cmd/inspect.mjs')
+  const d = runDoctor({ repoRoot: root, home: h })
+  assert.equal(d.problems.some(p => p.includes('drift')), false, JSON.stringify(d.problems))
+})

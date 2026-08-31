@@ -3,7 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runUpdate } from '../scripts/cmd/update.mjs'
 
-const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable'])
+const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable', 'sync'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
   '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--dry-run]',
@@ -12,8 +12,9 @@ const USAGE = [
   '       agp doctor',
   '       agp index',
   '       agp enable --plugin N | agp disable --plugin N [--dry-run]',
+  '       agp sync [--all|--tool T|--plugin N|--category C] [--dry-run]',
 ].join('\n')
-const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry'])
+const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry', 'tool'])
 const BOOL_FLAGS = new Set(['all', 'dry-run'])
 
 export function parseArgs(argv) {
@@ -102,6 +103,24 @@ async function main() {
     const { setEnabled } = await import('../scripts/lib/local.mjs')
     setEnabled(repoRoot, args.plugin, cmd === 'enable')
     console.log(JSON.stringify({ plugin: args.plugin, enabled: cmd === 'enable' }))
+    return
+  }
+  if (cmd === 'sync') {
+    const { runSync, isToolKey } = await import('../scripts/cmd/sync.mjs')
+    if (args.tool && !isToolKey(args.tool)) {
+      console.error(`error: unknown tool '${args.tool}' (expected bridge|claude|opencode|gemini|qwen|mcp)\n${USAGE}`)
+      process.exitCode = 2
+      return
+    }
+    if (args._.length === 0 && !args.all && !args.tool && !args.plugin && !args.category) {
+      console.error(`error: sync requires a selector: --all, --tool T, --plugin N, or --category C\n${USAGE}`)
+      process.exitCode = 2
+      return
+    }
+    const res = await runSync({ repoRoot, tool: args.tool ?? null,
+                                plugin: args.plugin ?? null, category: args.category ?? null,
+                                dryRun: !!args['dry-run'] })
+    console.log(JSON.stringify(res, null, 2))
     return
   }
   if (cmd === 'index') {
