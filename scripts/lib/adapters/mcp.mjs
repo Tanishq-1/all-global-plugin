@@ -37,6 +37,8 @@ function targetFile(home, target) {
   if (target === 'cursor') return path.join(home, '.cursor', 'mcp.json')
   if (target === 'gemini') return path.join(home, '.gemini', 'settings.json')
   if (target === 'qwen') return path.join(home, '.qwen', 'settings.json')
+  if (target === 'windsurf') return path.join(home, '.codeium', 'windsurf', 'mcp_config.json')
+  if (target === 'q') return path.join(home, '.aws', 'amazonq', 'mcp.json')
   throw new Error(`unknown mcp target: ${target}`)
 }
 
@@ -68,7 +70,7 @@ function syncJsonTarget({ file, servers, dryRun }) {
 }
 
 export function syncMcp({ repoRoot, plugins, home = os.homedir(),
-                          targets = ['cursor', 'gemini', 'qwen'], dryRun = false }) {
+                          targets = ['cursor', 'gemini', 'qwen', 'windsurf', 'q'], dryRun = false }) {
   const { servers, warnings } = collectMcpEntries(repoRoot, plugins)
   const out = { warnings }
   for (const t of targets) {

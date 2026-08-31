@@ -25,6 +25,8 @@ const DEFAULTS = {
   bridge: () => path.join(os.homedir(), '.agents', 'skills'),
   cursor: () => path.join(os.homedir(), '.cursor', 'skills'),
   qwen: () => path.join(os.homedir(), '.qwen', 'skills'),
+  windsurf: () => path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json'),
+  q: () => path.join(os.homedir(), '.aws', 'amazonq', 'mcp.json'),
 }
 
 function resolved(name, p) {

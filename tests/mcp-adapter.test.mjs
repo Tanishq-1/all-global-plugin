@@ -57,10 +57,66 @@ test('cursor target: merge preserves user servers, adds agp servers, removes sta
 test('per-target no-op when target config missing (adoption gate)', () => {
   const root = repo()
   const home = path.join(root, 'home-empty')
-  const res = syncMcp({ repoRoot: root, plugins: PLUGINS, home, targets: ['cursor', 'gemini', 'qwen'], dryRun: false })
+  const res = syncMcp({ repoRoot: root, plugins: PLUGINS, home, targets: ['cursor', 'gemini', 'qwen', 'windsurf', 'q'], dryRun: false })
   assert.equal(res.cursor.skipped, true)
   assert.equal(res.gemini.skipped, true)
   assert.equal(res.qwen.skipped, true)
+  assert.equal(res.windsurf.skipped, true)
+  assert.equal(res.q.skipped, true)
+})
+
+test('windsurf target: merge preserves user servers, adds agp, removes stale', () => {
+  const root = repo()
+  const home = path.join(root, 'home')
+  const dir = path.join(home, '.codeium', 'windsurf')
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, 'mcp_config.json'), JSON.stringify({
+    mcpServers: {
+      'user-srv': { command: 'keep' },
+      'stale-srv': { command: 'old', source: 'agp' },
+    },
+  }))
+  const res = syncMcp({ repoRoot: root, plugins: PLUGINS, home, targets: ['windsurf'], dryRun: false })
+  assert.equal(res.windsurf.skipped, false)
+  assert.ok(res.windsurf.added.includes('server-one'))
+  assert.deepEqual(res.windsurf.removed, ['stale-srv'])
+  const after = JSON.parse(fs.readFileSync(path.join(dir, 'mcp_config.json'), 'utf8'))
+  assert.ok(after.mcpServers['user-srv'])
+  assert.ok(after.mcpServers['server-one'])
+  assert.equal(after.mcpServers['stale-srv'], undefined)
+  assert.equal(after.mcpServers['server-two'], undefined, 'literal-secret server must be skipped')
+})
+
+test('amazon q target: merge preserves user servers, adds agp, removes stale', () => {
+  const root = repo()
+  const home = path.join(root, 'home')
+  const dir = path.join(home, '.aws', 'amazonq')
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, 'mcp.json'), JSON.stringify({
+    mcpServers: {
+      'user-srv': { command: 'keep' },
+      'stale-srv': { command: 'old', source: 'agp' },
+    },
+  }))
+  const res = syncMcp({ repoRoot: root, plugins: PLUGINS, home, targets: ['q'], dryRun: false })
+  assert.equal(res.q.skipped, false)
+  assert.ok(res.q.added.includes('server-one'))
+  assert.deepEqual(res.q.removed, ['stale-srv'])
+  const after = JSON.parse(fs.readFileSync(path.join(dir, 'mcp.json'), 'utf8'))
+  assert.ok(after.mcpServers['user-srv'])
+  assert.ok(after.mcpServers['server-one'])
+  assert.equal(after.mcpServers['stale-srv'], undefined)
+  assert.equal(after.mcpServers['server-two'], undefined, 'literal-secret server must be skipped')
+})
+
+test('default targets include windsurf and q', () => {
+  const root = repo()
+  const home = path.join(root, 'home-empty')
+  const res = syncMcp({ repoRoot: root, plugins: PLUGINS, home, dryRun: false })
+  for (const t of ['cursor', 'gemini', 'qwen', 'windsurf', 'q']) {
+    assert.ok(res[t], `default target '${t}' present`)
+    assert.equal(res[t].skipped, true)
+  }
 })
 
 test('gemini/qwen settings.json: mcpServers merged with user entries', () => {
