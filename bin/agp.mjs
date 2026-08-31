@@ -3,7 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runUpdate } from '../scripts/cmd/update.mjs'
 
-const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable', 'sync'])
+const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable', 'sync', 'rollback'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
   '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--disabled] [--dry-run]',
@@ -13,8 +13,9 @@ const USAGE = [
   '       agp index',
   '       agp enable --plugin N | agp disable --plugin N [--dry-run]',
   '       agp sync [--all|--tool T|--plugin N|--category C] [--dry-run]',
+  '       agp rollback --plugin N [--to SHA] | agp rollback --batch last|<id> [--dry-run]',
 ].join('\n')
-const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry', 'tool'])
+const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry', 'tool', 'to', 'batch'])
 const BOOL_FLAGS = new Set(['all', 'dry-run', 'disabled'])
 
 export function parseArgs(argv) {
@@ -122,6 +123,24 @@ async function main() {
                                 plugin: args.plugin ?? null, category: args.category ?? null,
                                 dryRun: !!args['dry-run'] })
     console.log(JSON.stringify(res, null, 2))
+    return
+  }
+  if (cmd === 'rollback') {
+    if (args.to && !args.plugin) {
+      console.error(`error: --to is only valid with --plugin\n${USAGE}`)
+      process.exitCode = 2
+      return
+    }
+    if ((args.plugin ? 1 : 0) + (args.batch ? 1 : 0) !== 1) {
+      console.error(`error: rollback requires exactly one of --plugin or --batch\n${USAGE}`)
+      process.exitCode = 2
+      return
+    }
+    const { runRollback } = await import('../scripts/cmd/rollback.mjs')
+    const res = runRollback({ repoRoot, name: args.plugin ?? null, to: args.to ?? null,
+                              batch: args.batch ?? null, dryRun: !!args['dry-run'] })
+    console.log(JSON.stringify(res, null, 2))
+    process.exitCode = res.ok ? 0 : 1
     return
   }
   if (cmd === 'index') {

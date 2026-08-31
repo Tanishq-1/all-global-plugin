@@ -1,7 +1,7 @@
 // tests/cli.test.mjs
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
+import { spawnSync, execFileSync } from 'node:child_process'
 import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -67,4 +67,58 @@ test('cli: valid --plugin dry-run unchanged (exit 0, skipped)', () => {
   assert.equal(r.status, 0, `stderr: ${r.stderr}`)
   assert.match(r.stdout, /"skipped"/)
   assert.match(r.stdout, /"demo"/)
+})
+
+test('parseArgs accepts --to and --batch values', async () => {
+  const { parseArgs } = await import('../bin/agp.mjs')
+  assert.deepEqual(parseArgs(['--to', 'a'.repeat(40), '--batch', 'last']),
+                   { _: [], to: 'a'.repeat(40), batch: 'last' })
+})
+
+test('cli: rollback with no selector exits 2', () => {
+  const r = runCli(['rollback', '--dry-run'])
+  assert.equal(r.status, 2)
+  assert.match(r.stderr, /error: rollback requires exactly one of --plugin or --batch/)
+})
+
+test('cli: rollback with both selectors exits 2', () => {
+  const r = runCli(['rollback', '--plugin', 'demo', '--batch', 'last'])
+  assert.equal(r.status, 2)
+  assert.match(r.stderr, /error: rollback requires exactly one of --plugin or --batch/)
+})
+
+test('cli: rollback --to without --plugin exits 2', () => {
+  const r = runCli(['rollback', '--batch', 'last', '--to', 'a'.repeat(40)])
+  assert.equal(r.status, 2)
+  assert.match(r.stderr, /error: --to is only valid with --plugin/)
+})
+
+test('cli: rollback e2e happy path (rollback after update, exit 0)', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-cli-rb-'))
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root })
+  const up = path.join(root, 'upstream')
+  const sk = path.join(up, 'skills', 'demo')
+  fs.mkdirSync(sk, { recursive: true })
+  fs.writeFileSync(path.join(sk, 'SKILL.md'), '---\nname: demo\ndescription: v1\n---\nbody-v1')
+  execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: up })
+  execFileSync('git', ['-C', up, 'add', '-A'])
+  execFileSync('git', ['-C', up, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'v1'])
+  fs.writeFileSync(path.join(root, 'plugins.json'), JSON.stringify(
+    { version: 2, plugin_dir: 'universal-plugin', targets: {}, plugins: [] }))
+  fs.mkdirSync(path.join(root, 'universal-plugin'), { recursive: true })
+
+  let r = runCli(['add', '--plugin', 'demo', '--url', up.replace(/\\/g, '/'),
+                  '--category', '_universal'], root)
+  assert.equal(r.status, 0, `add stderr: ${r.stderr}`)
+  fs.writeFileSync(path.join(sk, 'SKILL.md'), '---\nname: demo\ndescription: v2\n---\nbody-v2')
+  execFileSync('git', ['-C', up, 'add', '-A'])
+  execFileSync('git', ['-C', up, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'bump'])
+  r = runCli(['update', '--plugin', 'demo'], root)
+  assert.equal(r.status, 0, `update stderr: ${r.stderr}`)
+  r = runCli(['rollback', '--plugin', 'demo'], root)
+  assert.equal(r.status, 0, `rollback stderr: ${r.stderr}`)
+  assert.match(r.stdout, /"ok": true/)
+  const body = fs.readFileSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'demo',
+    'skills', 'demo', 'SKILL.md'), 'utf8')
+  assert.ok(body.includes('body-v1'), 'v1 content restored via CLI')
 })
