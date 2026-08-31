@@ -63,11 +63,14 @@ the clone instead of importing it.
 | Verb | Usage | Effect |
 |---|---|---|
 | `update` | `agp update [--all\|--plugin N\|--category C] [--dry-run]` | Pull upstream for installed plugins through the validation gates + atomic swap |
-| `add` | `agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--dry-run]` | Clone, validate, import a new plugin |
+| `add` | `agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--disabled] [--dry-run]` | Clone, validate, import a new plugin |
 | `remove` | `agp remove --plugin N [--dry-run]` | Drop manifest entry; folder retained |
-| `status` | `agp status` | Table: category/tier/url/version/SHA/behind-by per plugin |
-| `doctor` | `agp doctor` | Structure checks: missing folders, invalid structures, orphan folders |
+| `status` | `agp status` | Table: category/tier/active/version/behind-by per plugin |
+| `doctor` | `agp doctor` | Structure checks + drift detection vs adopted tool configs |
 | `index` | `agp index` | Regenerate `INDEX.md` from `plugins.json` |
+| `enable` | `agp enable --plugin N` | Activate plugin in your `local.json` (manifest untouched) |
+| `disable` | `agp disable --plugin N` | Deactivate plugin in your `local.json` (manifest untouched) |
+| `sync` | `agp sync --all\|--tool T\|--plugin N\|--category C [--dry-run]` | Push active plugins into all adopted tool configs/junction roots |
 
 Unknown or missing commands print a usage line to stderr and exit with code 2;
 validation failures exit non-zero with JSON error output.
@@ -100,13 +103,55 @@ set, so they can never leak into tool configs. Example from this repo's history:
 
 ## Roadmap
 
-- **Phase 2 — Adapters & sync**: six sync adapters (bridge junctions into
-  `~/.agents/skills`, claude settings merge, opencode `skills.paths`, cursor/qwen
-  junctions, mcp emitters) plus the `sync` verb and drift-detecting `doctor`.
+- **Phase 2 — Adapters & sync**: ✅ complete. Six sync adapters (bridge junctions into
+  `~/.agents/skills`, claude settings merge, opencode `skills.paths` marker block,
+  gemini dual-path junctions, qwen junctions, mcp emitter), the `sync` verb,
+  drift-detecting `doctor`, and the per-user `local.json` customize layer with
+  `enable`/`disable` verbs. ECC is vendored as the flagship disabled-by-default
+  showcase: present in the catalog, `off (default)` in `status`, excluded from every
+  sync target, and toggleable per user with `agp enable --plugin ecc` without touching
+  the manifest.
 - **Phase 3 — Rollback & tags**: batch tags (`batch/<utc-timestamp>`), per-plugin and
   whole-batch rollback verbs backed by `state.json`.
 - **Phase 4 — Automation**: weekly GitHub Actions workflow
   (`maintain.yml`: doctor → update → sync → changelog → tag batch).
+
+## Customize layer (per-user, non-destructive)
+
+A gitignored `local.json` at the repo root holds your personal overlay. A plugin's
+active state resolves as: `local.json` `plugins.<name>.enabled` wins if set;
+otherwise the manifest's `enabled_by_default` (absent = true).
+
+```bash
+agp enable --plugin ecc      # writes local.json only; plugins.json untouched
+agp disable --plugin ui-ux-pro-max
+agp status                    # shows 'active' | 'off (you)' | 'off (default)'
+```
+
+Removing a plugin from your active set never deletes the vendored folder or the
+manifest entry — `agp remove` retains the folder, and `disable`/`enable` only edit
+`local.json`. `local.json` also accepts `paths` overrides for non-standard tool
+config locations.
+
+## Sync targets
+
+`agp sync --all` pushes every **active** plugin into each adopted tool:
+
+| Target | Mechanism | Adoption gate |
+|---|---|---|
+| `~/.agents/skills` (bridge) | junctions per skill (Codex, Grok, Cline, Warp, Copilot, Cursor, Gemini-bridge) | root created on demand |
+| `~/.claude/settings.json` | `extraKnownMarketplaces` + `enabledPlugins` merge, `source:"agp"` markers | file must exist |
+| `~/.config/opencode/opencode.jsonc` | `// agp:skills-start/end` managed block | file must exist |
+| `~/.gemini/skills` + `~/.gemini/antigravity-cli/skills` | junctions, dual-path | roots created on demand |
+| `~/.qwen/skills` | junctions | root created on demand |
+| `~/.cursor/mcp.json`, `~/.gemini/settings.json`, `~/.qwen/settings.json` | `mcpServers` merge from plugin `.mcp.json` | file must exist |
+
+Safety rules on every target: user entries are preserved and never clobbered;
+stale agp-owned entries (marked `source:"agp"` or resolving inside the repo) are
+removed; existing config files get a `.bak-<timestamp>` backup before mutation;
+MCP env values are emitted only as `${VAR}` refs — literal secrets are skipped
+with a warning. `--dry-run` on any verb shows the exact planned changes without
+writing.
 
 ## Portability guarantee
 

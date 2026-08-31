@@ -1,6 +1,6 @@
 # Plugin Catalog
 
-_Generated 2026-08-26 — do not edit by hand_
+_Generated 2026-08-31 — do not edit by hand_
 
 ## _universal
 
@@ -10,6 +10,7 @@ _Generated 2026-08-26 — do not edit by hand_
 | karpathy-skills | oss | https://github.com/multica-ai/andrej-karpathy-skills |
 | mattpocock-skills | oss | https://github.com/mattpocock/skills |
 | prompts-chat | oss | https://github.com/f/prompts.chat |
+| ecc | oss | https://github.com/affaan-m/ecc |
 
 ## backend
 
