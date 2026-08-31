@@ -8,8 +8,9 @@ import { syncOpencode } from '../lib/adapters/opencode.mjs'
 import { syncGemini } from '../lib/adapters/gemini.mjs'
 import { syncQwen } from '../lib/adapters/qwen.mjs'
 import { syncMcp } from '../lib/adapters/mcp.mjs'
+import { syncCodex } from '../lib/adapters/codex.mjs'
 
-const TOOL_KEYS = new Set(['bridge', 'claude', 'opencode', 'gemini', 'qwen', 'mcp'])
+const TOOL_KEYS = new Set(['bridge', 'claude', 'opencode', 'gemini', 'qwen', 'mcp', 'codex', 'windsurf', 'q'])
 
 export function isToolKey(t) {
   return TOOL_KEYS.has(t)
@@ -41,7 +42,16 @@ export function runSync({ repoRoot, tool = null, plugin = null, category = null,
   if (wanted.has('qwen')) out.qwen = syncQwen(geminiQwenOpts)
   if (wanted.has('mcp')) {
     const mcpOpts = home ? { ...opts, home } : opts
-    out.mcp = syncMcp(mcpOpts)
+    out.mcp = syncMcp({ ...mcpOpts, targets: ['cursor', 'gemini', 'qwen'] })
+  }
+  if (wanted.has('codex')) out.codex = syncCodex(homeOpts)
+  if (wanted.has('windsurf')) {
+    const o = home ? { ...opts, home } : opts
+    out.windsurf = syncMcp({ ...o, targets: ['windsurf'] }).windsurf
+  }
+  if (wanted.has('q')) {
+    const o = home ? { ...opts, home } : opts
+    out.q = syncMcp({ ...o, targets: ['q'] }).q
   }
 
   return out

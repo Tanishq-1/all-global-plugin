@@ -14,6 +14,7 @@ import { syncOpencode } from '../lib/adapters/opencode.mjs'
 import { syncGemini } from '../lib/adapters/gemini.mjs'
 import { syncQwen } from '../lib/adapters/qwen.mjs'
 import { syncMcp } from '../lib/adapters/mcp.mjs'
+import { syncCodex } from '../lib/adapters/codex.mjs'
 
 export function driftProblems({ repoRoot, home, manifest }) {
   const local = readLocal(repoRoot)
@@ -61,6 +62,15 @@ export function driftProblems({ repoRoot, home, manifest }) {
     if (target === 'warnings' || !r || r.skipped) continue
     const diff = [...(r.added ?? []), ...(r.removed ?? [])]
     if (diff.length) push(`mcp/${target}`, diff.join(', '))
+  }
+
+  if (adopted(path.join(home, '.codex'))) {
+    const cx = syncCodex({ repoRoot, plugins, home, dryRun: true })
+    if (!cx.skipped) {
+      const cxDiff = [...(cx.added ?? []), ...(cx.removed ?? [])]
+      if (cxDiff.length) push('codex', cxDiff.join(', '))
+      for (const w of cx.warnings ?? []) push('codex', w)
+    }
   }
 
   return lines

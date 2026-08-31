@@ -123,6 +123,44 @@ test('doctor stays silent when target configs absent (adoption gate)', async () 
   assert.equal(d.problems.some(p => p.includes('drift')), false, JSON.stringify(d.problems))
 })
 
+test('doctor drift covers codex, windsurf, q when adopted', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  const dest = path.join(root, 'universal-plugin', '_universal', 'oss', 'one')
+  fs.writeFileSync(path.join(dest, '.mcp.json'), JSON.stringify({
+    mcpServers: { 'demo-srv': { command: 'npx', args: ['-y', 'demo'] } },
+  }))
+  const h = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-doc3-'))
+  fs.mkdirSync(path.join(h, '.codex'), { recursive: true })
+  fs.writeFileSync(path.join(h, '.codex', 'config.toml'), 'model = "gpt-5"\n')
+  fs.mkdirSync(path.join(h, '.codeium', 'windsurf'), { recursive: true })
+  fs.writeFileSync(path.join(h, '.codeium', 'windsurf', 'mcp_config.json'), '{"mcpServers":{}}')
+  fs.mkdirSync(path.join(h, '.aws', 'amazonq'), { recursive: true })
+  fs.writeFileSync(path.join(h, '.aws', 'amazonq', 'mcp.json'), '{"mcpServers":{}}')
+  const { runDoctor } = await import('../scripts/cmd/inspect.mjs')
+  const d = runDoctor({ repoRoot: root, home: h })
+  assert.ok(d.problems.some(p => p.includes('drift [codex]')), JSON.stringify(d.problems))
+  assert.ok(d.problems.some(p => p.includes('drift [mcp/windsurf]')), JSON.stringify(d.problems))
+  assert.ok(d.problems.some(p => p.includes('drift [mcp/q]')), JSON.stringify(d.problems))
+})
+
+test('doctor adoption-gates codex drift when ~/.codex absent', async () => {
+  const root = fixtureRepo()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'one', url: path.join(root, 'upstream').replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  const dest = path.join(root, 'universal-plugin', '_universal', 'oss', 'one')
+  fs.writeFileSync(path.join(dest, '.mcp.json'), JSON.stringify({
+    mcpServers: { 'demo-srv': { command: 'npx', args: ['-y', 'demo'] } },
+  }))
+  const h = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-doc4-'))
+  const { runDoctor } = await import('../scripts/cmd/inspect.mjs')
+  const d = runDoctor({ repoRoot: root, home: h })
+  assert.equal(d.problems.some(p => p.includes('drift [codex]')), false, JSON.stringify(d.problems))
+})
+
 test('add allows duplicate skill names for enabled_by_default:false plugin', async () => {
   const root = fixtureRepo()
   const { runAdd } = await import('../scripts/cmd/manage.mjs')

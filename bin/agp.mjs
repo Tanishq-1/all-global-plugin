@@ -110,7 +110,7 @@ async function main() {
   if (cmd === 'sync') {
     const { runSync, isToolKey } = await import('../scripts/cmd/sync.mjs')
     if (args.tool && !isToolKey(args.tool)) {
-      console.error(`error: unknown tool '${args.tool}' (expected bridge|claude|opencode|gemini|qwen|mcp)\n${USAGE}`)
+      console.error(`error: unknown tool '${args.tool}' (expected bridge|claude|opencode|gemini|qwen|mcp|codex|windsurf|q)\n${USAGE}`)
       process.exitCode = 2
       return
     }
