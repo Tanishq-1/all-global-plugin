@@ -9,7 +9,7 @@
 
 - **Objective:** Unified cross-tool AI plugin management. Vendors SKILL.md-native plugins into `universal-plugin/<category>/<tier>/`, syncs them into 10+ AI CLIs/IDEs via adapters, with per-user enable/disable overlay.
 - **Stack:** Node `>=21.0.0` ESM, zero runtime deps, `node:test`, NTFS junctions via `fs.symlinkSync(target, link, 'junction')` (no admin), `git` with `core.longpaths=true`.
-- **Test command:** `node --test "tests/**/*.test.mjs"` — currently **85/85 passing**.
+- **Test command:** `node --test "tests/**/*.test.mjs"` — currently **104/104 passing**.
 - **Source of truth:** `plugins.json` (manifest v2, `version:2`, `plugin_dir: universal-plugin`). Per-user overlay `local.json` (gitignored) never mutates manifest. Active-set rule: `local.plugins[name].enabled` → else `enabled_by_default` (absent = true).
 - **Safety guarantees:** Ownership rule — only junctions whose resolved target is inside repo are removed; plain dirs/files never touched. `.bak-<ts>` before mutating existing user configs. Adoption-gate — config-file adapters write only when destination file already exists. MCP secrets emitted as `${VAR}` refs only.
 - **Spec:** `docs/superpowers/specs/2026-08-26-all-global-plugin-design.md` (goals, compatibility matrix, folder structure, manifest schema, adapters, gates, rollback, testing).
@@ -22,11 +22,11 @@
 All-Global-Plugin/
 ├── universal-plugin/{_universal,fullstack,frontend,backend,mobile,cloud,salesforce}/{official,oss}/  + _quarantine/
 ├── plugins.json, state.json, local.json (gitignored), INDEX.md, QUARANTINE.md, README.md, package.json, .gitignore
-├── bin/agp.mjs                              # CLI dispatcher (9 verbs)
+├── bin/agp.mjs                              # CLI dispatcher (10 verbs)
 ├── scripts/lib/{manifest,paths,discover,frontmatter,gates,quarantine,atomic,state,layout,jsonc,gitsrc,local}.mjs
 ├── scripts/lib/adapters/{junctions,bridge,claude,opencode,gemini,qwen,mcp}.mjs
-├── scripts/cmd/{update,manage,inspect,index,sync}.mjs
-├── tests/*.test.mjs  (21 files)
+├── scripts/cmd/{update,manage,inspect,index,sync,rollback}.mjs
+├── tests/*.test.mjs  (22 files)
 └── docs/superpowers/{specs,plans}/
 ```
 
@@ -81,19 +81,28 @@ Manifest v2 CLI, 4 validation gates, atomic swap, quarantine, 11 plugins seeded 
 
 ### Test trajectory
 
-48 (Phase 1) → 53 (P2-1) → 59 (P2-2) → 63 (P2-3) → 68 (P2-4) → 74 (P2-5) → 79 (P2-6) → **85 (P2-7)** — all green.
+48 (Phase 1) → 53 (P2-1) → 59 (P2-2) → 63 (P2-3) → 68 (P2-4) → 74 (P2-5) → 79 (P2-6) → 85 (P2-7) → **104 (Phase 3)** — all green.
+
+---
+
+### Phase 3 (complete — commits `90823ec` through `f1300ef`)
+
+- **P3-1 Batch tracking, history, tags** (`90823ec`) — `commitAll` now returns the new commit SHA (or `null` on no-op); `gitsrc.mjs` gained `createTag`/`listCommits`/`showFile`/`checkoutPaths`/`pathTree`; `state.mjs` gained `appendHistory` (accumulating `plugins.<name>.history[]` of `{repo_commit, version, upstream_commit_sha, ts}`), `recordBatch` (`batches[]` of `{id, pre, post, at, tag, plugins}`), `findBatch` (resolves `last`/full id/timestamp suffix). `runUpdate` captures pre-fields before each swap, records `snapshot_commit` = repo commit (fixes the pre-P3 bug where it duplicated `upstream_commit_sha`), appends history, and after the loop builds `batch/<UTC-ms-iso>` (colons → `-`), records the batch, commits bookkeeping, creates the annotated tag (warn-and-continue). `runAdd`'s internal update passes `recordBatch: false` so adds don't double-record batches. Tests: `tests/batch.test.mjs` (5).
+- **P3-2 Rollback engine** (`8e7c947`) — `scripts/cmd/rollback.mjs` `runRollback({repoRoot, name, to, batch, dryRun})`. Per-plugin: walks the plugin folder's **distinct git tree states in first-introduction order** (a raw `git log` walk breaks once rollback commits re-create older trees — dedupe by `pathTree`), targets `--to` (validated against commit history) else one state back, restores `version`/`upstream_commit_sha` from `showFile(target, 'state.json')` (works for pre-Phase3 commits), `checkoutPaths` + `recordUpdate` + `appendHistory` + `Rollback <name> → <version> (<shortsha>)` commit. Batch: resolves via `findBatch`, probes each plugin's dest existence at `batch.pre`, skips added-during-window plugins with a warning, restores all present dests in one commit `Rollback batch <id>: ...`. Guards: exactly one of `name`/`batch`; `to` only with `name`; unknown plugin → error. Tests: `tests/rollback.test.mjs` (9).
+- **P3-3 CLI wiring** (`f1300ef`) — `bin/agp.mjs` 10th verb `rollback`; `--to`/`--batch` value flags; dispatch guards (no selector → exit 2, both selectors → exit 2, `--to` without `--plugin` → exit 2), JSON output, exit 0/1. Tests: `tests/cli.test.mjs` extended (+5, incl. spawnSync e2e add→update→rollback via real CLI).
+- **P3-4 Docs + live verification** — README verb row + "Rollback & batches" section; this handoff.
+
+### Live verification (temp git fixture, 2026-08-31)
+
+Full CLI loop in a throwaway git repo: `add → update (upstream v2) → rollback --plugin demo --dry-run` (plan only, nothing mutated) `→ rollback --plugin demo` (v1 content restored, `Rollback demo → …` commit) `→ update again → rollback --batch last` (v1 restored, single `Rollback batch <id>` commit). `git tag -l 'batch/*'` shows one annotated tag per update run; `git log --oneline` shows append-only linear history (no rewrites). Doctor on the fixture reports **drift only** — expected, since the fixture never synced into the adopted tool configs (its plugin set differs from the real repo's; structure/orphan checks clean, so the rollback left no catalog damage). On the real repo, `rollback --plugin superpowers --dry-run` exercises the "no previous version" path cleanly (every current plugin has exactly one snapshot commit). All 104 tests green; username-leak scan clean.
 
 ---
 
 ## Future Tasks
 
-- **Phase 3 — Rollback & batch tags (not yet planned)**
-  - **Objective:** Surgical and batch rollback via git history and `state.json` batch tracking.
-  - **Next steps:** Author plan `docs/superpowers/plans/<date>-phase3-rollback.md`, implement `batch/<utc-timestamp>` annotated tags on automated runs, `agp rollback <name> [--to SHA]` (per-plugin via `git log -- universal-plugin/...`), `agp rollback --batch last|<id>`, extend `state.json` with batch records. TDD with temp repo fixtures. Reference spec §7.
-
 - **Phase 4 — Automation (not yet planned)**
   - **Objective:** Weekly GitHub Actions workflow `maintain.yml`: `doctor → update --all → sync --all → changelog → status → commit → push → tag batch`. No force-push, no third-party bots.
-  - **Next steps:** Author plan, implement `.github/workflows/maintain.yml` (cron weekly), `release-notes/<name>-<ts>.md` generation from `state.json` deltas, changelog, CI smoke checks (validate manifest + structures + uniqueness on every push). Reference spec §7.
+  - **Next steps:** Author plan `docs/superpowers/plans/<date>-phase4-automation.md`, implement `.github/workflows/maintain.yml` (cron weekly), `release-notes/<name>-<ts>.md` generation from `state.json` deltas, changelog, CI smoke checks (validate manifest + structures + uniqueness on every push). Reference spec §7.
 
 - **Deferred small items**
   - MCP emitter: Codex `~/.codex/config.toml` TOML target (spec §5 lists it; only cursor/gemini/qwen JSON targets implemented).
@@ -102,12 +111,13 @@ Manifest v2 CLI, 4 validation gates, atomic swap, quarantine, 11 plugins seeded 
 
 ### Resume Sequence
 
-1. Author and execute Phase 3 plan (rollback & batch tags), then Phase 4 (automation).
-2. Optional: Codex TOML MCP target; real-profile `sync --dry-run` smoke.
+1. Author and execute Phase 4 plan (automation: `maintain.yml` weekly loop).
+2. Optional: Codex TOML MCP target; real-profile `sync --dry-run` smoke; `agp enable --plugin ecc` live smoke.
 
 ### Key Files to Read Before Continuing
 
 - `docs/superpowers/specs/2026-08-26-all-global-plugin-design.md` — architecture + adapter matrix
 - `docs/superpowers/plans/2026-08-27-phase2-sync-adapters.md` — executed Phase 2 plan
-- `plugins.json` + `state.json` + `bin/agp.mjs` + `scripts/lib/*.mjs` + `scripts/lib/adapters/*.mjs` + `tests/*.test.mjs`
+- `docs/superpowers/plans/2026-08-31-phase3-rollback.md` — executed Phase 3 plan
+- `plugins.json` + `state.json` + `bin/agp.mjs` + `scripts/lib/*.mjs` + `scripts/lib/adapters/*.mjs` + `scripts/cmd/*.mjs` + `tests/*.test.mjs`
 - `git log --oneline -20` and `git show --stat HEAD` for recent changes

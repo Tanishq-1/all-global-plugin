@@ -71,6 +71,7 @@ the clone instead of importing it.
 | `enable` | `agp enable --plugin N` | Activate plugin in your `local.json` (manifest untouched) |
 | `disable` | `agp disable --plugin N` | Deactivate plugin in your `local.json` (manifest untouched) |
 | `sync` | `agp sync --all\|--tool T\|--plugin N\|--category C [--dry-run]` | Push active plugins into all adopted tool configs/junction roots |
+| `rollback` | `agp rollback --plugin N [--to SHA] \| agp rollback --batch last\|<id> [--dry-run]` | Restore a plugin folder (or a whole update batch) to a previous state |
 
 Unknown or missing commands print a usage line to stderr and exit with code 2;
 validation failures exit non-zero with JSON error output.
@@ -101,6 +102,40 @@ set, so they can never leak into tool configs. Example from this repo's history:
 `grill-with-docs`). Fixing a quarantined plugin means resolving the failure upstream
 (or locally) and re-running `add`.
 
+## Rollback & batches
+
+Every non-dry-run `agp update` that changes at least one plugin records a **batch**:
+an entry in `state.json` (`batches[]`: `{id, pre, post, at, tag, plugins}`) plus an
+annotated git tag `batch/<utc-timestamp>` pointing at the bookkeeping commit. Per
+plugin, `state.json` also accumulates a `history[]` of
+`{repo_commit, version, upstream_commit_sha, ts}` entries, and `snapshot_commit`
+holds the repo commit that vendored that version (never the upstream SHA).
+
+Two rollback verbs give every update an instant undo path:
+
+```bash
+agp rollback --plugin superpowers            # restore previous version
+agp rollback --plugin superpowers --to SHA   # restore a specific snapshot commit
+agp rollback --batch last                    # undo the whole last update run
+agp rollback --batch batch/2026-08-31T10-00-00-000Z
+agp rollback --plugin superpowers --dry-run # plan only, mutate nothing
+```
+
+Semantics:
+
+- **Per-plugin** steps back through the plugin's distinct snapshot states (add →
+  v1 → v2 …), restoring folder content plus its `state.json` fields, and creates a
+  new `Rollback <name> → <version>` commit. Repeating it keeps walking older.
+- **Batch** restores every plugin folder that batch touched to the batch's `pre`
+  state in a single commit. A plugin that did not exist at `pre` (added during the
+  batch window) is **skipped with a warning, never deleted**.
+
+Safety properties: history is never rewritten (rollback = `git checkout <sha> --
+<paths>` + a new commit; tags are pointers, never moved); rollback touches only
+the named plugin's folder (or the batch's plugin folders) plus their `state.json`
+entries — `plugins.json`, unrelated plugins, and user tool configs are never
+modified; every rollback path supports `--dry-run`.
+
 ## Roadmap
 
 - **Phase 2 — Adapters & sync**: ✅ complete. Six sync adapters (bridge junctions into
@@ -111,8 +146,12 @@ set, so they can never leak into tool configs. Example from this repo's history:
   showcase: present in the catalog, `off (default)` in `status`, excluded from every
   sync target, and toggleable per user with `agp enable --plugin ecc` without touching
   the manifest.
-- **Phase 3 — Rollback & tags**: batch tags (`batch/<utc-timestamp>`), per-plugin and
-  whole-batch rollback verbs backed by `state.json`.
+- **Phase 3 — Rollback & tags**: ✅ complete. Batch tracking
+  (`batch/<utc-timestamp>` annotated tags + `state.json` batch records on every update
+  run), per-plugin rollback (`agp rollback --plugin N [--to SHA]`) and whole-batch
+  rollback (`agp rollback --batch last|<id>`).
+- **Phase 4 — Automation**: weekly GitHub Actions workflow
+  (`maintain.yml`: doctor → update → sync → changelog → tag batch).
 - **Phase 4 — Automation**: weekly GitHub Actions workflow
   (`maintain.yml`: doctor → update → sync → changelog → tag batch).
 
