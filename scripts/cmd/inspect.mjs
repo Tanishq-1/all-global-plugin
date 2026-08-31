@@ -6,6 +6,7 @@ import { structureGate } from '../lib/gates.mjs'
 import { pluginDest } from '../lib/layout.mjs'
 import { lsRemote } from '../lib/gitsrc.mjs'
 import { readState } from '../lib/state.mjs'
+import { readLocal, activeState } from '../lib/local.mjs'
 
 export function runDoctor({ repoRoot }) {
   const manifest = loadManifest(repoRoot)
@@ -40,10 +41,12 @@ export function runDoctor({ repoRoot }) {
 export function runStatus({ repoRoot }) {
   const manifest = loadManifest(repoRoot)
   const state = readState(repoRoot)
+  const local = readLocal(repoRoot)
   return manifest.plugins.map(p => {
     const remote = lsRemote(p.url)
     const known = state.plugins[p.name]?.upstream_commit_sha ?? null
     return { name: p.name, category: p.category, tier: p.tier,
+             active: activeState(p, local),
              version: state.plugins[p.name]?.version ?? null,
              behindBy: remote && known && remote !== known ? 1 : 0,
              url: p.url }

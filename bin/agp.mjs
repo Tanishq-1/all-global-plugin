@@ -3,7 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runUpdate } from '../scripts/cmd/update.mjs'
 
-const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index'])
+const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
   '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--dry-run]',
@@ -11,6 +11,7 @@ const USAGE = [
   '       agp status',
   '       agp doctor',
   '       agp index',
+  '       agp enable --plugin N | agp disable --plugin N [--dry-run]',
 ].join('\n')
 const VALUE_FLAGS = new Set(['plugin', 'category', 'url', 'tier', 'marketplace-key', 'skill-entry'])
 const BOOL_FLAGS = new Set(['all', 'dry-run'])
@@ -80,6 +81,27 @@ async function main() {
         process.exitCode = 1
       }
     }
+    return
+  }
+  if (cmd === 'enable' || cmd === 'disable') {
+    if (!args.plugin) {
+      console.error(`error: ${cmd} requires --plugin\n${USAGE}`)
+      process.exitCode = 2
+      return
+    }
+    const manifest = (await import('../scripts/lib/manifest.mjs')).loadManifest(repoRoot)
+    if (!manifest.plugins.some(p => p.name === args.plugin)) {
+      console.error(`error: plugin not in manifest: ${args.plugin}`)
+      process.exitCode = 1
+      return
+    }
+    if (args['dry-run']) {
+      console.log(JSON.stringify({ dryRun: true, plugin: args.plugin, enabled: cmd === 'enable' }))
+      return
+    }
+    const { setEnabled } = await import('../scripts/lib/local.mjs')
+    setEnabled(repoRoot, args.plugin, cmd === 'enable')
+    console.log(JSON.stringify({ plugin: args.plugin, enabled: cmd === 'enable' }))
     return
   }
   if (cmd === 'index') {

@@ -11,6 +11,8 @@ export function validateManifest(m) {
   for (const [i, p] of (m.plugins ?? []).entries()) {
     for (const k of REQUIRED) if (!p[k]) errs.push(`plugins[${i}].${k} missing`)
     if (p.tier && !TIERS.includes(p.tier)) errs.push(`plugins[${i}].tier must be official|oss`)
+    if (p.enabled_by_default !== undefined && typeof p.enabled_by_default !== 'boolean')
+      errs.push(`plugins[${i}].enabled_by_default must be boolean`)
   }
   const names = (m.plugins ?? []).map(p => p.name)
   const dupes = names.filter((n, i) => names.indexOf(n) !== i)
