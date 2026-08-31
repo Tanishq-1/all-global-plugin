@@ -52,6 +52,11 @@ export function showFile(repoRoot, sha, file) {
   return r.status === 0 ? r.stdout : null
 }
 
+export function pathTree(repoRoot, sha, p) {
+  const r = run(['-C', repoRoot, 'rev-parse', `${sha}:${p}`])
+  return r.status === 0 ? r.stdout.trim() : null
+}
+
 export function checkoutPaths(repoRoot, sha, paths) {
   const r = run(['-C', repoRoot, 'checkout', sha, '--', ...paths])
   if (r.status !== 0) throw new Error(`git checkout failed: ${r.stderr}`)
