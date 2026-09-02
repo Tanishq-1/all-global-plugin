@@ -1,0 +1,56 @@
+name: Weekly maintain
+on:
+  schedule:
+    - cron: '23 4 * * 1'   # Mondays 04:23 UTC (off the :00 mark)
+  workflow_dispatch: {}    # manual trigger — use for the first reviewed run
+
+permissions:
+  contents: write
+
+concurrency:
+  group: maintain
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history: rollback + batch walks need plugin trees
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+
+      - name: Configure git identity (commitAll uses ambient config)
+        run: |
+          git config user.name "agp-bot"
+          git config user.email "agp-bot@users.noreply.github.com"
+
+      - name: Doctor (abort on structural problems before touching upstream)
+        run: node bin/agp.mjs doctor
+
+      - name: Update all plugins (changelog + release-notes generated per batch)
+        id: update
+        continue-on-error: true   # a failing plugin aborts only itself; the run continues
+        run: node bin/agp.mjs update --all
+
+      # sync is adoption-gated: the runner adopts no tool configs, so all
+      # targets report skipped — correct by design; step kept per the spec loop.
+      - name: Sync all targets
+        run: node bin/agp.mjs sync --all
+
+      - name: Status
+        run: node bin/agp.mjs status
+
+      # undo for any failed run (manual by design — the safety net, not a loop step):
+      # undo: node bin/agp.mjs rollback --batch last
+
+      - name: Push (append-only, never force)
+        run: git push origin HEAD --follow-tags
+
+      - name: Fail if any plugin failed
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "::warning::Some plugins failed to update — successes were batched, tagged, and pushed; see logs. Undo with: node bin/agp.mjs rollback --batch last"
+          exit 1
