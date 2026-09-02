@@ -112,27 +112,55 @@ Test trajectory this part: 104 → 112 (codex) → 115 (targets) → **121 (wiri
 
 ---
 
+## Phase 4 — Automation (complete — commits `4a1e496` through final docs commit, 2026-09-03)
+
+Plan: `docs/superpowers/plans/2026-09-03-phase4-automation.md` (approved, executed task-by-task via TDD).
+
+- **P4-0 Plan** (`4a1e496`) — plan committed to the repo's plans dir.
+- **P4-1 Scenario-gap tests** (`56ccbc4`) — `tests/scenario-gaps.test.mjs` closes TESTING-STRATEGY.md §3 gaps #4 (locked/unwritable target config: user content survives; POSIX write throws; copy-first `.bak` acceptable) and #12 (junction parent denied: `ensureJunction` throws, existing entry never clobbered). Regression pins — adapters already held the invariants.
+- **P4-2 Release notes** (`40e922a`) — `scripts/lib/releasenotes.mjs`: `generateReleaseNotes({repoRoot, batch})` → `{files, skipped}` reading post-values from `state.plugins[name]` (batch record carries only pre fields); filename `release-notes/<name>-<at-with-colons-dashed>.md` (millisecond dot retained — matches the batch-id slug convention); content: version/SHA delta + GitHub compare link (only for `https://github.com/*` with 40-hex SHAs) + repo snapshot SHA. No-delta and unmanifested plugins skipped.
+- **P4-3 Changelog** (`ec723e5`) — `scripts/lib/changelog.mjs` `appendChangelog({repoRoot, batch, updateResult})`: creates `# Changelog` header when absent, prepends `## <date> — batch <id>` section with updated/skipped/failed, idempotent by batch id.
+- **P4-4 Verify verb** (`bbcb5b7`) — `scripts/cmd/verify.mjs` `runVerify → {ok, problems, skillCount}`: manifest validity (via load throw), per-active-plugin `structureGate`, cross-plugin skill-name uniqueness (active-set rule — disabled colliders exempt), orphan folders. Wired as 11th verb `agp verify` (JSON + exit 0/1).
+- **P4-5 Docs in the update flow** (`e740a6c`) — `COMMIT_PATHS` += `release-notes`, `CHANGELOG.md`, `INDEX.md`; `runUpdate` batch block now generates all three (warn-and-continue each — docs never fail an update) before the `Record batch` commit, so generated docs ride it. `runAdd`'s `recordBatch: false` path untouched.
+- **P4-6 CI workflow** (`0d2ac49`) — `.github/workflows/ci.yml` (push main + PRs: checkout → node 21 → `npm test` → `node bin/agp.mjs verify`) + `tests/workflows.test.mjs` structural validation.
+- **P4-7 Maintain workflow** (`d819963`) — `.github/workflows/maintain.yml`: weekly cron `23 4 * * 1` + `workflow_dispatch`; `permissions: contents: write`, concurrency group `maintain`, `fetch-depth: 0`, git identity `agp-bot` (commitAll needs ambient config), doctor abort gate, `update --all` with `continue-on-error` (per-plugin isolation) + fail-late step, adoption-gated `sync --all` (runner no-op by design), status, append-only `git push origin HEAD --follow-tags`, rollback-undo documented in-file.
+- **P4-8 Docs** (`ece6842` + final commit) — README: `verify` verb row, Phase 4 roadmap ✅, Automation section (workflow table, runner-sync no-op, failure isolation, `doctor --fix`→sync mapping, undo), release-notes paragraph; this handoff.
+- **P4-9 Verification-fix** (`1c38ccb`) — final verification surfaced a real Phase 2 bug: `syncGemini`/`syncQwen` were the only adapters without `home = os.homedir()` defaulting (claude/opencode/codex/mcp all had it), and the CLI never passes `home` — so `agp sync --all` and `agp sync --tool gemini|qwen` crashed with `ERR_INVALID_ARG_TYPE` at the CLI level since Phase 2 (tests always passed `home` explicitly; the mock-homedir regression test now pins the real CLI shape). This also explains why local tool configs accumulated drift; it would have crashed the maintain.yml sync step on runners.
+
+Design decisions:
+- **Runner sync no-op**: adoption gating means the GitHub runner's empty HOME produces `{skipped: true}` on every target — the weekly run's job is vendor + batch + tag + document; humans run `agp sync --all` locally per machine.
+- **Docs warn-and-continue**: release-notes/changelog/index generation failures print a warning and never fail an otherwise-successful update (isolation applies to docs).
+- **Zero-runtime-deps held**: workflows validated by a structural content test (`tests/workflows.test.mjs`), not a YAML parser.
+- **First activation**: repo has no remote today — when pushed to GitHub, trigger `maintain.yml` once via `workflow_dispatch`, review the log, then let the Monday 04:23 UTC cron take over. (Schedule-triggered workflows require the repo active on GitHub; cron only fires after the repo exists there.)
+
+Test trajectory: 121 → 123 (gaps) → 127 (release notes) → 132 (changelog) → 139 (verify) → 140 (docs-in-batch) → 141 (ci.yml) → 142 (maintain.yml) → **143 (homedir fix)** — all green. Fixture e2e proves release-notes + CHANGELOG + INDEX land inside the `Record batch` commit (`git show --name-only`). `agp verify` on the real repo exits 0; `update --all --dry-run` and `sync --all --dry-run` report plans only (sync now also exits 0 after `1c38ccb`); `agp doctor` reports only pre-existing local drift (Phase 4 never touched the vendored tree — last tree commits are Phase 3 updates awaiting a local `agp sync --all`). Username-leak grep clean.
+
+---
+
 ## Future Tasks
 
-- **Phase 4 — Automation (not yet planned)**
-  - **Objective:** Weekly GitHub Actions workflow `maintain.yml`: `doctor → update --all → sync --all → changelog → status → commit → push → tag batch`. No force-push, no third-party bots.
-  - **Next steps:** Author plan `docs/superpowers/plans/<date>-phase4-automation.md`, implement `.github/workflows/maintain.yml` (cron weekly), `release-notes/<name>-<ts>.md` generation from `state.json` deltas, changelog, CI smoke checks (validate manifest + structures + uniqueness on every push). Reference spec §7 and `docs/TESTING-STRATEGY.md` §2.5 (test-plan) + §5 (automation guardrails).
+- **Activate the workflows on GitHub** (Phase 4 code is complete; the repo has no remote yet)
+  - Create the GitHub repo, push `main` (append-only; first push includes the `batch/*` tags if desired).
+  - Trigger `maintain.yml` once via `workflow_dispatch`, review the log line-by-line (per TESTING-STRATEGY.md dry-run-first discipline), then let the weekly cron run.
+  - Watch the first `ci.yml` run on the initial push (test suite + `agp verify` must be green on ubuntu-latest).
+
+- **Live-profile smoke (opt-in, dry-run first)**
+  - Real-profile `agp sync --all --dry-run` incl. the three new targets; then live sync + `agp doctor` → 0 problems. Note: `agp doctor` currently reports pre-existing drift (bridge/opencode/codex) from Phase 3-era updates never re-synced — the CLI-level `sync --all` crash that prevented catching up is fixed in `1c38ccb`; one live `agp sync --all` clears it.
+  - `agp enable --plugin ecc` live smoke (fixture-verified only so far).
 
 - **Compatibility backlog (from Phase 3 Part 2 research — see docs/COMPATIBILITY.md §3)**
   - Zed adapter: verify `~/.config/zed/settings.json` `context_servers` shape; JSON (no comments) + no documented ownership field → needs registry/sidecar ownership design before writing.
   - Crush adapter: verify `~/.config/crush/crush.json` `mcp_servers` shape against a live install.
   - Trae / PearAI / Void / Wave / JetBrains AI / Amazon Q IDE: locate + verify MCP/skills config surfaces (probe plan in COMPATIBILITY.md §3).
-  - MCP collision warning + `mcp_server_prefix` manifest option (COMPATIBILITY.md §5.1).
+  - MCP collision warning + `mcp_server_prefix` manifest option (COMPATIBILITY.md §5.1); CI smoke check that every `paths.mjs` DEFAULTS key has a matching `TOOL_KEYS` entry.
 
 - **Deferred small items**
-  - Scenario-matrix test gaps: read-only/locked target config; junction permission denied (TESTING-STRATEGY.md §3 #4/#12).
   - Codex streamable-http servers in TOML once upstream documents URL semantics (currently stdio-only).
-  - `agp enable --plugin ecc` live smoke on the real profile (fixture-verified only so far).
   - GitHub-search-assisted `add` (user provides URL today; search UX post-Phase-2 per plan out-of-scope).
 
 ### Resume Sequence
 
-1. Author and execute Phase 4 plan (automation: `maintain.yml` weekly loop).
+1. Push the repo to GitHub and activate the workflows (first `workflow_dispatch` run of `maintain.yml`, reviewed, then cron).
 2. Optional: real-profile `sync --all --dry-run` smoke incl. the three new targets; `agp enable --plugin ecc` live smoke; Zed/Crush format verification when those tools are installed.
 
 ### Key Files to Read Before Continuing
