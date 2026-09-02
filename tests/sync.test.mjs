@@ -139,3 +139,21 @@ test('dry-run mutates nothing', async () => {
   const oc = fs.readFileSync(path.join(h, '.config', 'opencode', 'opencode.jsonc'), 'utf8')
   assert.equal(oc.includes('agp:skills-start'), false)
 })
+
+// Regression: the CLI invokes runSync without `home`, so every adapter must
+// default to os.homedir() itself. gemini and qwen used to crash with
+// ERR_INVALID_ARG_TYPE (path.join(undefined, ...)).
+test('runSync without home (CLI path) defaults to os.homedir for every tool', async (t) => {
+  const root = seed()
+  const h = home()
+  const restore = t.mock.method(os, 'homedir', () => h)
+  try {
+    const res = await runSync({ repoRoot: root, dryRun: false })
+    assert.ok(res.bridge.created.includes('alpha'), 'bridge honors mocked homedir')
+    assert.ok(res.gemini.created.includes('alpha@legacy'), 'gemini defaults home')
+    assert.deepEqual(res.qwen.created, ['alpha'], 'qwen defaults home')
+    assert.equal(fs.existsSync(path.join(h, '.qwen', 'skills', 'alpha')), true)
+  } finally {
+    restore.mock.restore()
+  }
+})

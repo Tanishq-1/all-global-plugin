@@ -1,5 +1,6 @@
 // scripts/lib/adapters/qwen.mjs
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { discoverSkills } from '../discover.mjs'
 import { pluginDest } from '../layout.mjs'
@@ -18,7 +19,7 @@ function desiredSkills(repoRoot, plugins) {
   return desired
 }
 
-export function syncQwen({ repoRoot, plugins, home, local, dryRun = false }) {
+export function syncQwen({ repoRoot, plugins, home = os.homedir(), local, dryRun = false }) {
   const desired = desiredSkills(repoRoot, plugins)
   const rootDir = path.join(home, '.qwen', 'skills')
   const created = [], removed = []

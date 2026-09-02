@@ -1,5 +1,6 @@
 // scripts/lib/adapters/gemini.mjs
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { discoverSkills } from '../discover.mjs'
 import { pluginDest } from '../layout.mjs'
@@ -23,7 +24,7 @@ function desiredSkills(repoRoot, plugins) {
   return desired
 }
 
-export function syncGemini({ repoRoot, plugins, home, local, dryRun = false }) {
+export function syncGemini({ repoRoot, plugins, home = os.homedir(), local, dryRun = false }) {
   const desired = desiredSkills(repoRoot, plugins)
   const created = [], removed = []
 
