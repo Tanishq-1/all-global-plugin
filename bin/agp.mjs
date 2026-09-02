@@ -3,13 +3,14 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runUpdate } from '../scripts/cmd/update.mjs'
 
-const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'index', 'enable', 'disable', 'sync', 'rollback'])
+const COMMANDS = new Set(['update', 'add', 'remove', 'status', 'doctor', 'verify', 'index', 'enable', 'disable', 'sync', 'rollback'])
 const USAGE = [
   'usage: agp update [--all|--plugin N|--category C] [--dry-run]',
   '       agp add --plugin N --url U --category C [--tier oss] [--marketplace-key K] [--skill-entry P] [--disabled] [--dry-run]',
   '       agp remove --plugin N [--dry-run]',
   '       agp status',
   '       agp doctor',
+  '       agp verify',
   '       agp index',
   '       agp enable --plugin N | agp disable --plugin N [--dry-run]',
   '       agp sync [--all|--tool T|--plugin N|--category C] [--dry-run]',
@@ -141,6 +142,19 @@ async function main() {
                               batch: args.batch ?? null, dryRun: !!args['dry-run'] })
     console.log(JSON.stringify(res, null, 2))
     process.exitCode = res.ok ? 0 : 1
+    return
+  }
+  if (cmd === 'verify') {
+    const { runVerify } = await import('../scripts/cmd/verify.mjs')
+    try {
+      const res = runVerify({ repoRoot })
+      for (const p of res.problems) console.log(p)
+      console.log(JSON.stringify({ ok: res.ok, skillCount: res.skillCount }))
+      process.exitCode = res.ok ? 0 : 1
+    } catch (e) {
+      console.error(e.message)
+      process.exitCode = 1
+    }
     return
   }
   if (cmd === 'index') {
