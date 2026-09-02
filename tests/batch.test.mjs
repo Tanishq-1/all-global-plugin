@@ -95,6 +95,50 @@ test('runUpdate records history, batch, tag; snapshot_commit is a repo SHA', asy
   assert.ok(tags.includes(b.id), `annotated tag ${b.id} must exist`)
 })
 
+test('runUpdate generates release notes, changelog, index in the batch commit', async () => {
+  const { root, up } = fixture()
+  const { runAdd } = await import('../scripts/cmd/manage.mjs')
+  await runAdd({ repoRoot: root, name: 'demo', url: up.replace(/\\/g, '/'),
+                 category: '_universal', tier: 'oss', dryRun: false })
+  bumpUpstream(up, 'body-v2')
+  const { runUpdate } = await import('../scripts/cmd/update.mjs')
+  const res = await runUpdate({ repoRoot: root, name: 'demo', dryRun: false })
+  assert.deepEqual(res.updated, ['demo'])
+
+  const { readState } = await import('../scripts/lib/state.mjs')
+  const b = readState(root).batches[0]
+
+  // release-notes file written, with a version/SHA delta
+  const rnDir = path.join(root, 'release-notes')
+  assert.ok(fs.existsSync(rnDir), 'release-notes dir must exist')
+  const notes = fs.readdirSync(rnDir).filter(f => f.startsWith('demo-'))
+  assert.equal(notes.length, 1, `one note for demo, got: ${notes.join(', ')}`)
+  const noteContent = fs.readFileSync(path.join(rnDir, notes[0]), 'utf8')
+  assert.match(noteContent, /# demo/)
+  assert.match(noteContent, /→ /)
+
+  // CHANGELOG.md at repo root contains the batch id
+  const cl = fs.readFileSync(path.join(root, 'CHANGELOG.md'), 'utf8')
+  assert.match(cl, /# Changelog/)
+  assert.ok(cl.includes(b.id), 'changelog must reference the batch id')
+  assert.match(cl, /- updated: demo/)
+
+  // INDEX.md regenerated
+  const idx = fs.readFileSync(path.join(root, 'INDEX.md'), 'utf8')
+  assert.match(idx, /# Plugin Catalog/)
+
+  // everything rides the Record batch commit
+  const logMsgs = execFileSync('git', ['-C', root, 'log', '--format=%H %s'], { encoding: 'utf8' })
+    .trim().split('\n').filter(Boolean)
+  const recordLine = logMsgs.find(l => l.includes('Record batch'))
+  assert.ok(recordLine, 'Record batch commit must exist')
+  const recordSha = recordLine.split(' ')[0]
+  const names = execFileSync('git', ['-C', root, 'show', '--name-only', '--format=', recordSha], { encoding: 'utf8' })
+  assert.ok(names.replace(/\\/g, '/').includes('release-notes/'), `Record batch commit must stage release-notes: ${names}`)
+  assert.ok(names.includes('CHANGELOG.md'), 'Record batch commit must stage CHANGELOG.md')
+  assert.ok(names.includes('INDEX.md'), 'Record batch commit must stage INDEX.md')
+})
+
 test('failed update run records no batch and no tag', async () => {
   const { root } = fixture()
   fs.writeFileSync(path.join(root, 'plugins.json'), JSON.stringify({

@@ -2,7 +2,8 @@ import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const COMMIT_PATHS = ['universal-plugin', 'plugins.json', 'state.json', 'QUARANTINE.md']
+const COMMIT_PATHS = ['universal-plugin', 'plugins.json', 'state.json', 'QUARANTINE.md',
+                      'release-notes', 'CHANGELOG.md', 'INDEX.md']
 
 function run(args, opts = {}) { return spawnSync('git', args, { encoding: 'utf8', ...opts }) }
 

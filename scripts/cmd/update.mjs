@@ -109,7 +109,14 @@ export async function runUpdate({ repoRoot, name = null, category = null, dryRun
   if (!dryRun && updated.length && wantBatch) {
     const id = `batch/${new Date().toISOString().replaceAll(':', '-')}`
     const at = new Date().toISOString()
-    recordBatch(repoRoot, { id, pre, post: headSha(repoRoot), at, tag: id, plugins: preFields })
+    const batch = { id, pre, post: headSha(repoRoot), at, tag: id, plugins: preFields }
+    recordBatch(repoRoot, batch)
+    const { writeReleaseNotes } = await import('../lib/releasenotes.mjs')
+    const { appendChangelog } = await import('../lib/changelog.mjs')
+    const { writeIndex } = await import('./index.mjs')
+    try { writeReleaseNotes({ repoRoot, batch }) } catch (e) { console.warn(`  warning: release notes: ${e.message}`) }
+    try { appendChangelog({ repoRoot, batch, updateResult: { updated, skipped, failed } }) } catch (e) { console.warn(`  warning: changelog: ${e.message}`) }
+    try { writeIndex({ repoRoot }) } catch (e) { console.warn(`  warning: index: ${e.message}`) }
     commitAll(repoRoot, `Record batch ${id} — ${updated.join(', ')}`)
     try {
       createTag(repoRoot, id, `agp batch: ${updated.length} plugin${updated.length === 1 ? '' : 's'}`)
