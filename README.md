@@ -67,6 +67,7 @@ the clone instead of importing it.
 | `remove` | `agp remove --plugin N [--dry-run]` | Drop manifest entry; folder retained |
 | `status` | `agp status` | Table: category/tier/active/version/behind-by per plugin |
 | `doctor` | `agp doctor` | Structure checks + drift detection vs adopted tool configs |
+| `verify` | `agp verify` | CI smoke: manifest + structure + uniqueness + orphans (exit 0/1) |
 | `index` | `agp index` | Regenerate `INDEX.md` from `plugins.json` |
 | `enable` | `agp enable --plugin N` | Activate plugin in your `local.json` (manifest untouched) |
 | `disable` | `agp disable --plugin N` | Deactivate plugin in your `local.json` (manifest untouched) |
@@ -136,6 +137,12 @@ the named plugin's folder (or the batch's plugin folders) plus their `state.json
 entries — `plugins.json`, unrelated plugins, and user tool configs are never
 modified; every rollback path supports `--dry-run`.
 
+Every recorded batch also generates documentation in the same `Record batch`
+commit: one `release-notes/<name>-<ts>.md` per updated plugin (version and
+upstream-SHA delta, plus a GitHub compare link when the upstream is a GitHub
+repo) and a prepended `CHANGELOG.md` section (`updated/skipped/failed` per
+batch). `INDEX.md` is regenerated at the same time.
+
 ## Roadmap
 
 - **Phase 2 — Adapters & sync**: ✅ complete. Six sync adapters (bridge junctions into
@@ -156,8 +163,10 @@ modified; every rollback path supports `--dry-run`.
   three, plus the whole-catalog compatibility matrix
   ([`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md)) and the Phase 4 testing strategy
   ([`docs/TESTING-STRATEGY.md`](docs/TESTING-STRATEGY.md)).
-- **Phase 4 — Automation**: weekly GitHub Actions workflow
-  (`maintain.yml`: doctor → update → sync → changelog → tag batch).
+- **Phase 4 — Automation**: ✅ complete. Weekly `maintain.yml` loop
+  (doctor → update --all → sync --all → status → push `--follow-tags`), per-push `ci.yml`
+  smoke (full test suite + `agp verify`), and per-batch generated docs — release notes,
+  `CHANGELOG.md`, and a regenerated `INDEX.md` ride every `Record batch` commit.
 
 ## Customize layer (per-user, non-destructive)
 
@@ -204,6 +213,34 @@ removed; existing config files get a `.bak-<timestamp>` backup before mutation;
 MCP env values are emitted only as `${VAR}` refs — literal secrets are skipped
 with a warning. `--dry-run` on any verb shows the exact planned changes without
 writing.
+
+## Automation
+
+Two GitHub Actions workflows ship with the repo (`.github/workflows/`):
+
+| Workflow | Trigger | Loop |
+|---|---|---|
+| `ci.yml` | every push (main) + PRs | `npm test` (full suite) → `node bin/agp.mjs verify` (manifest + structures + uniqueness + orphans; exit-code gated) |
+| `maintain.yml` | weekly cron (Mon 04:23 UTC) + manual `workflow_dispatch` | git identity → `doctor` (abort on structural problems) → `update --all` (generates release-notes + changelog + index per batch) → `sync --all` → `status` → `git push origin HEAD --follow-tags` |
+
+Notes on how the weekly run behaves:
+
+- **Runner sync is a no-op by design.** Sync is adoption-gated — the runner's
+  home has none of the adopted tool configs (`~/.claude`, `~/.codex`, …), so
+  every target reports `{skipped: true}`. The weekly run vendors, batches, tags,
+  and documents; per-machine sync stays a local `agp sync --all`.
+- **Failure isolation.** A failing plugin lands in `failed[]` and aborts only
+  itself; successful plugins still get their batch, docs, and tag, and the
+  push proceeds. The run then ends red with a warning naming the undo command.
+- **Append-only, ever.** The workflow pushes with `--follow-tags` and never
+  force-pushes; commits and tags are created by the same `bin/agp.mjs` verbs
+  humans use. No third-party actions beyond `actions/checkout` and
+  `actions/setup-node`; the default `GITHUB_TOKEN` does the push.
+- **`doctor --fix`** from the original design maps to plain `doctor` +
+  `sync --all` — drift repair *is* sync, so no separate flag exists.
+- **Undo any weekly run** with `agp rollback --batch last` (restores every
+  plugin folder that batch touched to its pre-pull state, in one commit).
+- A concurrency group (`maintain`) prevents overlapping weekly runs.
 
 ## Portability guarantee
 
