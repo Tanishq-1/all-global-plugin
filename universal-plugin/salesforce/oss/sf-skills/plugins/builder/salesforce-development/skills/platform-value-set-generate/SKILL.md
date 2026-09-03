@@ -5,6 +5,8 @@ metadata:
   version: "1.0"
   domains: ["Platform"]
   minApiVersion: "60.0"
+  relatedSkills:
+    - "platform-custom-field-generate"
   cliTools:
     - tool: ["sf"]
       semver: ">=2.0.0"

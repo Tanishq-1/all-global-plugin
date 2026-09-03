@@ -34,10 +34,10 @@ STATE = {
 
 
 class UiModeContracts(unittest.TestCase):
-    def test_manifest_declares_one_string_option_with_full_default(self):
+    def test_manifest_declares_ui_mode_string_option_with_full_default(self):
         plugin = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
         config = plugin["userConfig"]
-        self.assertEqual(set(config), {"ui_mode"})
+        self.assertIn("ui_mode", config)
         self.assertEqual(config["ui_mode"]["type"], "string")
         self.assertEqual(config["ui_mode"]["default"], "full")
         self.assertIn("full", config["ui_mode"]["description"])
@@ -270,7 +270,9 @@ class UiModeContracts(unittest.TestCase):
                 self.assertEqual(SFX.cmd_journey([]), 0)
             outputs.append(out.getvalue())
         self.assertEqual(len(set(outputs)), 1)
-        self.assertIn("current: Build", outputs[0])
+        # The visible rail is signpost-only now (no state summary); assert a mode-invariant
+        # signpost label rather than the removed "current: Build" summary line.
+        self.assertIn("build", outputs[0])
 
 
 if __name__ == "__main__":

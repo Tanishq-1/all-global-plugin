@@ -5,6 +5,8 @@ metadata:
   version: "1.0"
   domains: ["Platform"]
   minApiVersion: "60.0"
+  relatedSkills:
+    - "experience-ui-bundle-custom-app-generate"
 ---
 
 ## When to Use This Skill
@@ -46,8 +48,8 @@ Custom applications (Lightning Apps) that group tabs and functionality to provid
 - **description**: Brief description of the application's purpose
 - **tabs**: Array of tab names to include
 - **utilityBar**: API name of the Utility Bar configuration
-- **brand**: ⚠️ HIGHLY RECOMMENDED - Branding configuration object (headerColor, shouldOverrideOrgTheme, footerColor)
-- **actionOverrides**: ⚠️ REQUIRED when custom record pages exist - Action override configuration (actionName, content, formFactor, type, pageOrSobjectType)
+- **brand**: HIGHLY RECOMMENDED - Branding configuration object (headerColor, shouldOverrideOrgTheme, footerColor)
+- **actionOverrides**: REQUIRED when custom record pages exist - Action override configuration (actionName, content, formFactor, type, pageOrSobjectType)
 - **profileActionOverrides**: Profile-specific action overrides (actionName, content, formFactor, pageOrSobjectType, type, profile)
 - **isNavAutoTempTabsDisabled**: Navigation behavior setting (default: false)
 - **isNavPersonalizationDisabled**: Personalization setting (default: false)

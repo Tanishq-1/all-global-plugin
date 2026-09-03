@@ -1,3 +1,41 @@
+# [1.46.0](https://github.com/forcedotcom/sf-skills/compare/1.45.0...1.46.0) (2026-09-03)
+
+
+### Features
+
+* Release salesforce-development 2.1.0; allowlist salesforce-test-drive for public release @W-24080114@ ([dc9f278](https://github.com/forcedotcom/sf-skills/commit/dc9f27889890a11652fc36223bd1eba20154eaac))
+
+
+
+# [1.45.0](https://github.com/forcedotcom/sf-skills/compare/1.44.0...1.45.0) (2026-09-02)
+
+
+### Features
+
+* Release 6 new + 14 updated skills @W-24067533@ ([0274876](https://github.com/forcedotcom/sf-skills/commit/0274876cfbe7c7a77aceabf4357f2e9074ac30a8))
+
+
+
+# [1.44.0](https://github.com/forcedotcom/sf-skills/compare/1.43.0...1.44.0) (2026-09-01)
+
+
+### Features
+
+* @W-23921501@ sync validator, model vocabulary & authoring docs to main ([e266d36](https://github.com/forcedotcom/sf-skills/commit/e266d36252d69f482d0b08ab07e24c18d44e212d))
+
+
+
+# [1.43.0](https://github.com/forcedotcom/sf-skills/compare/1.42.0...1.43.0) (2026-08-28)
+
+
+### Features
+
+* @W-23921501@ declare relatedSkills in SKILL.md frontmatter (sync [#138](https://github.com/forcedotcom/sf-skills/issues/138)… ([90dbced](https://github.com/forcedotcom/sf-skills/commit/90dbcedf589103ffc3d5f26fee7f3f37f837bf6a))
+* Merge pull request [#1535](https://github.com/forcedotcom/sf-skills/issues/1535) from salesforce-internal/auto-integration/pr-1521 ([0ec9697](https://github.com/forcedotcom/sf-skills/commit/0ec96979d104df41537a094424dceca508ca5bfb))
+* Release to main: 16 new + 14 updated skills (1 removed) @W-24006609@ ([08bb9a5](https://github.com/forcedotcom/sf-skills/commit/08bb9a5599241b57301bd2d49880b9b5602413be))
+
+
+
 # [1.42.0](https://github.com/forcedotcom/sf-skills/compare/1.41.0...1.42.0) (2026-08-25)
 
 

@@ -140,6 +140,14 @@ PLAN_EVENTS = {
     "agent_dispatched": {"agent_type"},
     "exception": {"error_class", "kind"},
     "mcp_tool_used": {"mcp_server", "mcp_tool", "outcome"},
+    # plugin_loaded / plugin_suggestion_declined: accept/decline halves of a
+    # plugin-catalog proposal (dynamic-loading-strategy-plan.md Phase 4.5).
+    "plugin_loaded": {"plugin", "origin", "confidence", "surface"},
+    "plugin_suggestion_declined": {"plugin", "origin", "confidence", "surface"},
+    # plugin_recommended / plugin_installed: recommend-time and install-time
+    # signals for a known-set plugin (W-23856691), additive to the pair above.
+    "plugin_recommended": {"plugin", "origin", "confidence", "surface"},
+    "plugin_installed": {"plugin", "origin", "confidence", "surface"},
 }
 
 # Every field the envelope must attach to EVERY event (§2.2 "attached to every event").
@@ -349,10 +357,10 @@ class EveryEventCapturedTests(TelemetryCaptureTestBase):
     def test_skill_dispatched_flat_name(self):
         # The real dispatch shape in this repo is a flat, unqualified name.
         self.capture("skill_dispatched",
-                     payload={"session_id": "S1", "tool_input": {"skill": "agentforce-generate"}})
+                     payload={"session_id": "S1", "tool_input": {"skill": "platform-apex-generate"}})
         ev = self.last("skill_dispatched")
-        self.assertEqual(ev["payload"]["skill"], "agentforce-generate")
-        self.assertEqual(ev["payload"]["skill_domain"], "agentforce")
+        self.assertEqual(ev["payload"]["skill"], "platform-apex-generate")
+        self.assertEqual(ev["payload"]["skill_domain"], "platform")
 
     def test_non_sf_skill_dispatch_is_not_recorded(self):
         # The Skill matcher fires for EVERY session skill; a third-party / user
@@ -475,19 +483,114 @@ class EveryEventCapturedTests(TelemetryCaptureTestBase):
             self.assertEqual(rec["payload"]["error_class"], et, et)
             self.assertEqual(sft._to_pdp_event(rec)["componentId"], et, et)
 
-    def test_all_seven_events_are_capturable(self):
-        """End-to-end: fire every plan event once, assert all 7 land in the buffer."""
+    def test_all_events_are_capturable(self):
+        """End-to-end: fire every plan event once, assert all land in the buffer."""
         self.capture("session_start", payload={"session_id": "S1", "source": "startup"})
         self.capture("command_invoked", "success", payload={"session_id": "S1", "tool_input": {"command": "sf-context status-org"}})
         self.capture("skill_dispatched", payload={"session_id": "S1", "tool_input": {"skill": "platform-apex-generate"}})
         # Use identifiers this plugin actually ships — non-plugin agents/MCP servers
         # are intentionally skipped now, so a placeholder would never land.
-        self.capture("agent_dispatched", payload={"session_id": "S1", "tool_input": {"subagent_type": "adlc-qa"}})
+        self.capture("agent_dispatched", payload={"session_id": "S1", "tool_input": {"subagent_type": "salesforce-dev"}})
         self.capture("mcp_tool_used", "success", payload={"session_id": "S1", "tool_name": "mcp__salesforce-lsp__apex_diagnostics"})
         self.capture("exception", "api_error", payload={"session_id": "S1", "error_type": "e"})
+        # plugin_loaded/plugin_suggestion_declined only validate against the
+        # generated catalog artifact, which doesn't exist in this hermetic temp
+        # cwd — stand in a fake origin map the same way the real one is shaped.
+        with mock.patch.object(sft, "_plugin_catalog_origins", return_value={"agentforce-adlc": "external"}):
+            self.capture("plugin_loaded", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "bypass-gate"}})
+            self.capture("plugin_suggestion_declined", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "medium", "surface": "discovery-command"}})
+            self.capture("plugin_recommended", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "session-start"}})
+            self.capture("plugin_installed", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "none", "surface": "self-directed"}})
         self.capture("session_end", payload={"session_id": "S1"})
         seen = {e["event"] for e in self.events()}
         self.assertEqual(seen, set(PLAN_EVENTS), "not every plan event reached the buffer")
+
+    def test_plugin_loaded_and_declined(self):
+        with mock.patch.object(sft, "_plugin_catalog_origins", return_value={"agentforce-adlc": "external"}):
+            self.capture("plugin_loaded", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "bypass-gate"}})
+            ev = self.last("plugin_loaded")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "bypass-gate"})
+            self.capture("plugin_suggestion_declined", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "medium", "surface": "discovery-command"}})
+            ev = self.last("plugin_suggestion_declined")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "medium", "surface": "discovery-command"})
+            self.capture("plugin_loaded", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "user-prompt"}})
+            ev = self.last("plugin_loaded")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "user-prompt"})
+
+    def test_plugin_loaded_rejects_unknown_plugin_or_bad_vocab(self):
+        # A plugin name absent from the generated catalog (held/internal, or never
+        # ours) must emit nothing — same discipline as a non-plugin MCP server/agent.
+        with mock.patch.object(sft, "_plugin_catalog_origins", return_value={"agentforce-adlc": "external"}):
+            self.capture("plugin_loaded", payload={"session_id": "S1", "tool_input": {
+                "plugin": "some-held-internal-plugin", "confidence": "high", "surface": "bypass-gate"}})
+            self.assertEqual([e for e in self.events() if e["event"] == "plugin_loaded"], [],
+                             "no plugin_loaded event may be written for a plugin outside the catalog")
+            # A known plugin with an out-of-vocabulary confidence/surface is also dropped.
+            self.capture("plugin_loaded", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "low", "surface": "bypass-gate"}})
+            self.capture("plugin_suggestion_declined", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "background"}})
+            self.assertEqual([e for e in self.events()
+                              if e["event"] in ("plugin_loaded", "plugin_suggestion_declined")], [],
+                             "an out-of-vocabulary confidence/surface must not be captured")
+
+    def test_plugin_recommended_and_installed(self):
+        with mock.patch.object(sft, "_plugin_catalog_origins", return_value={"agentforce-adlc": "external"}):
+            # session-start is a persisted surface, valid for recommendation and
+            # later successful-install attribution.
+            self.capture("plugin_recommended", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "session-start"}})
+            ev = self.last("plugin_recommended")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "session-start"})
+            self.capture("plugin_installed", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "session-start"}})
+            ev = self.last("plugin_installed")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "session-start"})
+            # user-prompt is a persisted proposal surface, valid for both the
+            # recommendation and the subsequent successful install attribution.
+            self.capture("plugin_recommended", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "user-prompt"}})
+            ev = self.last("plugin_recommended")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "user-prompt"})
+            self.capture("plugin_installed", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "user-prompt"}})
+            ev = self.last("plugin_installed")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "high", "surface": "user-prompt"})
+            # installed: self-directed (no in-session proposal) rides confidence "none".
+            self.capture("plugin_installed", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "none", "surface": "self-directed"}})
+            ev = self.last("plugin_installed")
+            self.assertEqual(ev["payload"], {"plugin": "agentforce-adlc", "origin": "external",
+                                             "confidence": "none", "surface": "self-directed"})
+
+    def test_plugin_recommended_and_installed_reject_bad_vocab(self):
+        with mock.patch.object(sft, "_plugin_catalog_origins", return_value={"agentforce-adlc": "external"}):
+            # An unknown surface must not be accepted for plugin_installed.
+            self.capture("plugin_installed", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "high", "surface": "background"}})
+            # "self-directed"/"none" belong to plugin_installed, never plugin_recommended.
+            self.capture("plugin_recommended", payload={"session_id": "S1", "tool_input": {
+                "plugin": "agentforce-adlc", "confidence": "none", "surface": "self-directed"}})
+            # a plugin outside the catalog is dropped on both events.
+            self.capture("plugin_recommended", payload={"session_id": "S1", "tool_input": {
+                "plugin": "not-ours", "confidence": "high", "surface": "session-start"}})
+            self.assertEqual([e for e in self.events()
+                              if e["event"] in ("plugin_recommended", "plugin_installed")], [],
+                             "recommend/install events must honor their closed vocabularies")
 
 
 class EnvelopeTests(TelemetryCaptureTestBase):
@@ -643,6 +746,11 @@ class CommandTierTests(TelemetryCaptureTestBase):
     def test_first_party_subcommand_allowlisted(self):
         binary, cat, sub = self._cls("sf-context status-org")
         self.assertEqual((binary, cat, sub), ("sf-context", "plugin_command", "status-org"))
+        binary, cat, sub = self._cls("sf-context discover overview")
+        self.assertEqual((binary, cat, sub), ("sf-context", "plugin_command", "discover"))
+        rec = {"event": "command_invoked", "payload": {
+            "binary": binary, "category": cat, "subcommand": sub, "outcome": "success"}}
+        self.assertEqual(sft._to_pdp_event(rec)["componentId"], "sf-context.discover")
         # an unknown subcommand is dropped, not stored raw
         self.assertEqual(self._cls("sf-context frobnicate-SECRET")[2], "")
 
@@ -1346,8 +1454,26 @@ class ManifestWiringTests(unittest.TestCase):
                     if "sf-context post-bash" in cmd:
                         cls.wired.setdefault("command_invoked", []).append(section)
 
+    # plugin_loaded / plugin_suggestion_declined are never fired by a manifest
+    # hook at all -- both are in-process capture_event(...) calls made directly
+    # from sf_context.py::cmd_plugin_install as it resolves a proposal (install
+    # vs. explicit decline), same "no parallel hook, single writer" discipline as
+    # command_invoked's post-bash success leg, but with no distinguishable command
+    # substring to detect here -- so there is nothing for this manifest scan to find.
+    # plugin_recommended / plugin_installed (W-23856691) are likewise in-process
+    # capture_event(...) calls -- from _plugin_catalog_match / the SessionStart banner
+    # slot _session_start_plugin_slot (recommend) and cmd_plugin_install (install) --
+    # never a `telemetry-capture
+    # <event>` manifest hook, so this substring scan has nothing to find for them.
+    _NEVER_HOOK_WIRED = {
+        "plugin_loaded", "plugin_suggestion_declined",
+        "plugin_recommended", "plugin_installed",
+    }
+
     def test_every_plan_event_is_wired(self):
         for event in PLAN_EVENTS:
+            if event in self._NEVER_HOOK_WIRED:
+                continue
             self.assertIn(event, self.wired, f"event {event!r} has no hook in the manifest")
 
     def test_events_are_in_sensible_lifecycle_sections(self):
@@ -1472,6 +1598,14 @@ class PdpMappingTests(TelemetryCaptureTestBase):
             "agent_dispatched": {"agent_type": "code-review"},
             "exception": {"error_class": "rate_limit", "kind": "api_error"},
             "mcp_tool_used": {"mcp_server": "api-context", "mcp_tool": "query", "outcome": "success"},
+            "plugin_loaded": {"plugin": "agentforce-adlc", "origin": "external",
+                              "confidence": "high", "surface": "bypass-gate"},
+            "plugin_suggestion_declined": {"plugin": "agentforce-adlc", "origin": "external",
+                              "confidence": "medium", "surface": "discovery-command"},
+            "plugin_recommended": {"plugin": "agentforce-adlc", "origin": "external",
+                              "confidence": "high", "surface": "session-start"},
+            "plugin_installed": {"plugin": "agentforce-adlc", "origin": "external",
+                              "confidence": "none", "surface": "self-directed"},
         }
         produced = {}
         for event, payload in cases.items():
@@ -1485,6 +1619,20 @@ class PdpMappingTests(TelemetryCaptureTestBase):
         self.assertEqual(produced["session_end"]["eventVolume"], 7)
         self.assertEqual(produced["mcp_tool_used"]["componentId"], "api-context.query")
         self.assertEqual(produced["exception"]["componentId"], "rate_limit")
+        self.assertEqual(produced["plugin_loaded"]["eventName"], "plugin.loaded")
+        self.assertEqual(produced["plugin_loaded"]["componentId"], "agentforce-adlc")
+        self.assertEqual(produced["plugin_loaded"]["contextName"], "origin::confidence::surface")
+        self.assertEqual(produced["plugin_loaded"]["contextValue"], "external::high::bypass-gate")
+        self.assertEqual(produced["plugin_suggestion_declined"]["eventName"],
+                         "pluginSuggestion.declined")
+        self.assertEqual(produced["plugin_suggestion_declined"]["contextValue"],
+                         "external::medium::discovery-command")
+        self.assertEqual(produced["plugin_recommended"]["eventName"], "plugin.recommended")
+        self.assertEqual(produced["plugin_recommended"]["contextValue"],
+                         "external::high::session-start")
+        self.assertEqual(produced["plugin_installed"]["eventName"], "plugin.installed")
+        self.assertEqual(produced["plugin_installed"]["contextValue"],
+                         "external::none::self-directed")
         # session.started keeps the model as componentId (original design) AND now
         # also carries it in the context tuple for a consistent model dimension.
         self.assertEqual(produced["session_start"]["componentId"], "claude-opus-4-8")
@@ -1750,6 +1898,67 @@ class A4dDatasetAlignmentTests(unittest.TestCase):
         rec = self._record("session_start", {"is_first_run": True})
         self.assertEqual(sft._to_a4d_event(rec)["attributes"]["harness"], "")
 
+    def test_event_time_on_every_uip_event_only(self):
+        cases = (
+            ("session_start", {"is_first_run": True}),
+            ("session_end", {"duration_ms": 10, "event_count": 1}),
+            ("command_invoked", {"binary": "sf-context", "category": "plugin_command",
+                                 "subcommand": "status-org", "outcome": "success"}),
+            ("skill_dispatched", {"skill": "platform-apex-generate",
+                                  "skill_domain": "platform"}),
+            ("agent_dispatched", {"agent_type": "salesforce-dev"}),
+            ("mcp_tool_used", {"mcp_server": "salesforce-lsp", "mcp_tool": "query",
+                               "outcome": "success"}),
+            ("exception", {"error_class": "rate_limit", "kind": "api_error"}),
+        )
+        for event, payload in cases:
+            rec = self._record(event, payload, timestamp=1724170000000)
+            self.assertEqual(sft._to_a4d_event(rec)["attributes"]["eventTime"],
+                             "1724170000000", event)
+            self.assertNotIn("eventTime", json.dumps(sft._to_pdp_event(rec)), event)
+
+    def test_event_time_empty_when_timestamp_missing(self):
+        rec = self._record("session_start", {"is_first_run": True})
+        self.assertEqual(sft._to_a4d_event(rec)["attributes"]["eventTime"], "")
+
+    def test_is_first_run_only_on_session_started(self):
+        first = self._record("session_start", {"is_first_run": True})
+        later = self._record("session_start", {"is_first_run": False})
+        self.assertEqual(sft._to_a4d_event(first)["attributes"]["is_first_run"], "true")
+        self.assertEqual(sft._to_a4d_event(later)["attributes"]["is_first_run"], "false")
+        ended = self._record("session_end", {"duration_ms": 10, "event_count": 1})
+        self.assertNotIn("is_first_run", sft._to_a4d_event(ended)["attributes"])
+        self.assertNotIn("is_first_run", json.dumps(sft._to_pdp_event(first)))
+
+    def test_command_surface_is_derived_on_command_invoked_only(self):
+        def surface(subcommand):
+            rec = self._record("command_invoked", {
+                "binary": "sf-context", "category": "plugin_command",
+                "subcommand": subcommand, "outcome": "success"})
+            return rec, sft._to_a4d_event(rec)["attributes"]["commandSurface"]
+
+        user, user_surface = surface("status-org")
+        plugin_install, plugin_install_surface = surface("plugin-install")
+        hook, hook_surface = surface("telemetry-flush")
+        unknown, unknown_surface = surface("")
+        self.assertEqual(user_surface, "user")
+        self.assertEqual(plugin_install_surface, "user")
+        self.assertEqual(hook_surface, "hook")
+        self.assertEqual(unknown_surface, "unknown")
+        for rec in (user, plugin_install, hook, unknown):
+            self.assertNotIn("commandSurface", json.dumps(sft._to_pdp_event(rec)))
+        session = self._record("session_start", {"is_first_run": True})
+        self.assertNotIn("commandSurface", sft._to_a4d_event(session)["attributes"])
+
+    def test_deploy_gate_commands_are_hook_surface(self):
+        for subcommand in ("prod-check", "destructive", "auto-deploy"):
+            rec = self._record("command_invoked", {
+                "binary": "sf-deploy-gate", "category": "plugin_command",
+                "subcommand": subcommand, "outcome": "success"})
+            attrs = sft._to_a4d_event(rec)["attributes"]
+            self.assertEqual(attrs["commandSurface"], "hook", subcommand)
+            self.assertNotIn("commandSurface", json.dumps(sft._to_pdp_event(rec)))
+
 
 class GoldenWireShapeTests(unittest.TestCase):
     """CHARACTERIZATION safety net: pin the EXACT PDP + UIP wire shapes for every
@@ -1824,20 +2033,23 @@ class GoldenWireShapeTests(unittest.TestCase):
             "plugin_name": "salesforce-development", "plugin_version": "1.11.0",
             "org_bucket": "production", "model": "claude-opus-4-8", "ci": "false",
             "machine_id": "MID123", "harness": "claude-code",
+            "eventTime": "",
             "skillSource": "salesforce-development", "modelId": "claude-opus-4-8",
             "user_Id": "MID123",
         }
 
     def test_uip_wire_shape_golden(self):
         expected = {
-            "session_start": {"eventName": "session.started", "attributes":
-                self._uip_common("claude-opus-4-8", "os::org_bucket::model",
-                                 "darwin::production::claude-opus-4-8")},
+            "session_start": {"eventName": "session.started", "attributes": {
+                **self._uip_common("claude-opus-4-8", "os::org_bucket::model",
+                                   "darwin::production::claude-opus-4-8"),
+                "is_first_run": "true"}},
             "session_end": {"eventName": "session.ended", "attributes": {
                 **self._uip_common("session", "duration_ms", "2500"), "eventVolume": 7}},
-            "command_invoked": {"eventName": "command.invoked", "attributes":
-                self._uip_common("sf-context.status-org", "outcome::category",
-                                 "success::plugin_command")},
+            "command_invoked": {"eventName": "command.invoked", "attributes": {
+                **self._uip_common("sf-context.status-org", "outcome::category",
+                                   "success::plugin_command"),
+                "commandSurface": "user"}},
             "skill_dispatched": {"eventName": "skill.dispatched", "attributes": {
                 **self._uip_common("platform-apex-generate", "skill_domain", "platform"),
                 "skillName": "platform-apex-generate"}},
@@ -2589,7 +2801,7 @@ class TransmitTests(TelemetryCaptureTestBase):
                 "org_id": "00Dxx0000000001", "org_bucket": "sandbox",
                 "username": "admin@acme.example"}):
             self.capture("session_start", payload={"session_id": "S1", "model": "m"})
-            self.capture("agent_dispatched", payload={"session_id": "S1", "tool_input": {"subagent_type": "adlc-qa"}})
+            self.capture("agent_dispatched", payload={"session_id": "S1", "tool_input": {"subagent_type": "salesforce-dev"}})
             job = self.transmit_job()
         self._org.start()
         # The buffered envelopes carry the unresolved default...

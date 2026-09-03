@@ -148,13 +148,19 @@ if (
 
 const reason = String(state.reason ?? '').trim();
 
+// The "set up access" next step below is the handoff to the
+// `service-itsm-agentic-setup-agent-runtime-access-assign` skill (declared in
+// this skill's metadata.relatedSkills). We deliberately surface it in plain
+// admin language ("grant this agent's runtime access") rather than by raw skill
+// name — the routing metadata carries the linkage, so the user-facing report
+// stays friendly while the relationship remains discoverable.
 const NEXT_STEPS = {
   'CREATED':
-    'The IT Service Employee agent is live as an NGA-native agent (no external-link icon in Agentforce Studio). No new agent was provisioned beyond the one just created. Verify end-to-end in Agentforce Studio\'s Agents list.',
+    'The IT Service Employee agent is live as an NGA-native agent (no external-link icon in Agentforce Studio). No new agent was provisioned beyond the one just created. Verify end-to-end in Agentforce Studio\'s Agents list. **Next — set up access:** before anyone can use the agent, the user needs the runtime permissions the agent\'s actions use (Prompt Templates, Data Cloud, or Unified Catalog, depending on what is provisioned). Just ask to **grant this agent\'s runtime access** and those feature permissions — plus an "Agent Access" permission set covering the agent — will be set up for the user(s) you choose.',
   'ALREADY-CREATED':
-    'The IT Service Employee agent was already present and active — no new agent was provisioned. Verify end-to-end in Agentforce Studio\'s Agents list.',
+    'The IT Service Employee agent was already present and active — no new agent was provisioned. Verify end-to-end in Agentforce Studio\'s Agents list. **Next — set up access:** before anyone can use the agent, the user needs the runtime permissions the agent\'s actions use (Prompt Templates, Data Cloud, or Unified Catalog, depending on what is provisioned). Just ask to **grant this agent\'s runtime access** and those feature permissions — plus an "Agent Access" permission set covering the agent — will be set up for the user(s) you choose.',
   'ACTIVATED':
-    'The existing IT Service Employee agent was found inactive and has been activated — no new agent was provisioned. Verify end-to-end in Agentforce Studio\'s Agents list.',
+    'The existing IT Service Employee agent was found inactive and has been activated — no new agent was provisioned. Verify end-to-end in Agentforce Studio\'s Agents list. **Next — set up access:** before anyone can use the agent, the user needs the runtime permissions the agent\'s actions use (Prompt Templates, Data Cloud, or Unified Catalog, depending on what is provisioned). Just ask to **grant this agent\'s runtime access** and those feature permissions — plus an "Agent Access" permission set covering the agent — will be set up for the user(s) you choose.',
   'PENDING CONFIRMATION':
     'The run is paused at the confirm-to-write gate. In this skill, create + publish + activate happen as one atomic sequence gated by a single confirmation — there is no supported create-only or publish-without-activate mode, and no partial "create-only" mode of any kind. Re-run and reply "yes" when you are ready for the agent to go live.',
   'DECLINED':
@@ -165,6 +171,15 @@ const NEXT_STEPS = {
       : 'Review the observed error and remediate. Enablement of missing prerequisites is a Setup-UI/admin action outside this skill\'s scope — use `service-itsm-agentic-setup-agentforce-studio-validate` or `service-itsm-agentic-setup-agentforce-studio-configure` to check/enable readiness first. Re-run this skill once the blocker is resolved.',
 };
 
+// Escape a value for a Markdown table cell — a literal pipe or newline would
+// break the row. The stage-detail values are enumerated/controlled, so this is
+// belt-and-braces, but it keeps the table well-formed against any future field.
+const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+const confirmDetail =
+  confirm === 'true' && (devName !== '<pending>' || label !== '<pending>')
+    ? `; confirmed developerName=${devName}, label="${label}"`
+    : '';
+
 const report = `# Employee Agent — Create & Activate
 
 IT Service Employee Agent Creation (via service-itsm-agentic-setup-employee-agent-configure)
@@ -174,13 +189,17 @@ Template: ${tmplLabel} (id=${tmplId}) — ${tmplKind}
 Source:   ${tmplId} Agent Script
 Agent:    ${devName} ("${label}") — NGA-native bundle
 
-  Preflight  ......................... Studio hasAccess=${preStudio}; template agentScript present=${preTmpl}; verdict=${preVerdict}
-  Enumerate  ......................... target agent exists before write=${enumExists}; latest version status=${enumVer}; verdict=${enumVerdict}
-  Confirm-to-write ................... user-confirmed=${confirm}${(confirm === 'true' && (devName !== '<pending>' || label !== '<pending>')) ? `; confirmed developerName=${devName}, label="${label}"` : ''}
-  Create bundle ...................... ${createBundle}
-  Publish ............................ ${publish}
-  Activate ........................... ${activate}
-  Verify ............................. ${verify}
+Stage 2 — install & activate the agent from its template:
+
+| Stage | Status |
+| --- | --- |
+| Preflight | ${cell(`Studio hasAccess=${preStudio}; template agentScript present=${preTmpl}; verdict=${preVerdict}`)} |
+| Enumerate | ${cell(`target agent exists before write=${enumExists}; latest version status=${enumVer}; verdict=${enumVerdict}`)} |
+| Confirm-to-write | ${cell(`user-confirmed=${confirm}${confirmDetail}`)} |
+| Create bundle | ${cell(createBundle)} |
+| Publish | ${cell(publish)} |
+| Activate | ${cell(activate)} |
+| Verify | ${cell(verify)} |
 
 Verdict: ${verdict}
 Reason:  ${reason}

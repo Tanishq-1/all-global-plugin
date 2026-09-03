@@ -2,8 +2,8 @@
 """Channel-aware Salesforce capability registry primitives.
 
 The public release manifest is the only release-channel input to the checked
-catalog. Internal authoring inventory is read only for an explicitly gated,
-in-memory preview and is never serialized by this module.
+catalog. This module hashes skill trees and builds, snapshots, and verifies
+that manifest; it never serializes internal authoring inventory.
 
 Canonical tree hash policy (``sf-skill-tree-v1``): entries use sorted POSIX
 relative paths. Directories, regular files, and symbolic links have distinct
@@ -38,6 +38,16 @@ TREE_SCAN_MAX_ENTRIES = 4096
 TREE_SCAN_MAX_DEPTH = 32
 TREE_SCAN_MAX_FILE_BYTES = 8 * 1024 * 1024
 TREE_SCAN_MAX_TOTAL_BYTES = 64 * 1024 * 1024
+
+# Opt-in only (default stays empty so existing skill-tree callers are
+# unaffected): directory names a caller may ask to prune from the scan
+# entirely — not entered, not hashed. Authored skill/plugin content never
+# contains these; they are interpreter- or test-generated runtime state
+# (both gitignored at the repo root) that would otherwise make a tree hash
+# depend on unrelated local tool invocations (e.g. running the Python test
+# suite populates ``__pycache__``, and the journey/phase-history tests write
+# a relative ``.sf/`` runtime dir under ``scripts/test/``).
+BUILD_ARTIFACT_DIR_NAMES = frozenset({"__pycache__", ".sf"})
 TREE_SCAN_CHUNK_BYTES = 1024 * 1024
 TREE_SCAN_DIR_FD_SUPPORTED = (
     os.name != "nt"
@@ -51,7 +61,7 @@ APPROVED_DOMAIN_PREFIXES = (
     "data360", "design-systems", "dx", "education-cloud", "energy-and-utilities",
     "experience", "external", "field-service", "fsc", "health-cloud", "industries",
     "insurance", "integration", "life-sciences", "manufacturing", "marketing",
-    "mobile", "net-zero", "non-profit", "omnistudio", "platform", "public-sector",
+    "mobile", "net-zero", "nonprofit", "omnistudio", "platform", "public-sector",
     "revenue", "sales", "service", "sf-skill", "tableau", "tableau-next",
 )
 
@@ -174,6 +184,7 @@ def inspect_skill_tree(
     root: Path, *, safety_root: Optional[Path] = None,
     budget: Optional[dict[str, int]] = None,
     executable_paths: Optional[set[str]] = None,
+    exclude_dir_names: Optional[frozenset[str]] = None,
 ) -> dict:
     """Hash one tree and capture its SKILL.md bytes in the same bounded scan.
 
@@ -217,6 +228,9 @@ def inspect_skill_tree(
                         metadata = path.lstat()
                     except OSError as exc:
                         raise RegistryError(f"{path}: cannot inspect tree entry: {exc}") from exc
+                    if (exclude_dir_names and child.name in exclude_dir_names
+                            and stat.S_ISDIR(metadata.st_mode)):
+                        continue
                     relative = path.relative_to(root).as_posix()
                     entries.append((relative, path, metadata))
                     if stat.S_ISDIR(metadata.st_mode):
@@ -375,10 +389,12 @@ def inspect_skill_tree(
 def canonical_tree_sha256(
     root: Path, *, safety_root: Optional[Path] = None,
     executable_paths: Optional[set[str]] = None,
+    exclude_dir_names: Optional[frozenset[str]] = None,
 ) -> str:
     """Return the canonical ``sf-skill-tree-v1`` hash for a directory tree."""
     observation = inspect_skill_tree(
-        root, safety_root=safety_root, executable_paths=executable_paths
+        root, safety_root=safety_root, executable_paths=executable_paths,
+        exclude_dir_names=exclude_dir_names,
     )
     if not observation["stable"]:
         raise RegistryError(f"{root}: tree changed during scan")
@@ -493,19 +509,64 @@ def _access_scalar(raw: str, path: Path) -> str:
     return raw
 
 
+def _check_access_check_entry_content(entries: list, path: Path) -> None:
+    """Content-quality checks on populated accessCheck entries, mirroring the
+    imperative checks in scripts/validate-skills.ts. The JSON Schema (and
+    ``_valid_access_check``) only enforce shape (type enum, required
+    {type, value} keys) — they deliberately do not constrain value content, so
+    these checks live here instead. Raises RegistryError, same as any other
+    malformed accessCheck declaration.
+    """
+    seen: dict[str, int] = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or not isinstance(entry.get("value"), str):
+            continue
+        entry_type = entry.get("type")
+        value = entry["value"]
+        trimmed = value.strip()
+
+        if not trimmed:
+            raise RegistryError(
+                f'{path}: accessCheck entry {{type: "{entry_type}"}} has an empty or whitespace-only value'
+            )
+
+        if value != trimmed:
+            raise RegistryError(
+                f'{path}: accessCheck entry {{type: "{entry_type}", value: {value!r}}} has leading/trailing whitespace — use {trimmed!r}'
+            )
+
+        if entry_type in ("userPerm", "orgPerm", "orgPref") and re.search(r"\s", trimmed):
+            raise RegistryError(
+                f'{path}: accessCheck entry {{type: "{entry_type}", value: {value!r}}} contains embedded whitespace — API names for {entry_type} must not contain spaces'
+            )
+
+        key = f"{entry_type}::{trimmed}"
+        seen[key] = seen.get(key, 0) + 1
+
+    for key, count in seen.items():
+        if count > 1:
+            entry_type, value = key.split("::", 1)
+            raise RegistryError(
+                f'{path}: accessCheck has {count} duplicate entries for {{type: "{entry_type}", value: "{value}"}} — remove the duplicates'
+            )
+
+
 def read_access_check(path: Path) -> Optional[list[dict[str, str]]]:
-    """Read the tri-state ``metadata.accessCheck`` from SKILL.md frontmatter.
+    """Read the binary ``metadata.accessCheck`` from SKILL.md frontmatter.
 
     Returns ``None`` when accessCheck is undeclared (no ``metadata`` block or no
-    ``accessCheck`` key), ``[]`` for an explicit empty array (applies to any
-    org), or a list of ``{"type", "value"}`` entries when availability is
-    conditional. Raises RegistryError on a present-but-malformed declaration so a
-    broken accessCheck can never silently collapse into "undeclared" or "any
-    org". Bounded hand parser (this module intentionally avoids a YAML
-    dependency, matching ``read_skill``); shape is enforced by
-    ``_valid_access_check``. Only inline ``[]`` / double-quoted JSON arrays and
-    block-style ``- type:``/``value:`` entries are recognized; any other form
-    fails loud.
+    ``accessCheck`` key), or a list of ``{"type", "value"}`` entries when
+    availability is conditional. An empty array carries no meaning (same
+    rationale as cliTools/relatedSkills) and is rejected with a RegistryError,
+    same as any other present-but-malformed declaration — a broken accessCheck
+    can never silently collapse into "undeclared". Bounded hand parser (this
+    module intentionally avoids a YAML dependency, matching ``read_skill``);
+    shape is enforced by ``_valid_access_check``. Only inline ``[]`` /
+    double-quoted JSON arrays and block-style ``- type:``/``value:`` entries are
+    recognized; any other form fails loud. Populated entries also get content
+    checks (empty/whitespace-only value, leading/trailing whitespace, embedded
+    whitespace in userPerm/orgPerm/orgPref, duplicate {type, value} pairs) via
+    ``_check_access_check_entry_content``, mirroring scripts/validate-skills.ts.
     """
     lines = _frontmatter(path)
     meta_index = next(
@@ -539,6 +600,11 @@ def read_access_check(path: Path) -> Optional[list[dict[str, str]]]:
             raise RegistryError(f"{path}: unsupported accessCheck value: {exc.msg}") from exc
         if type(parsed) is not list:
             raise RegistryError(f"{path}: accessCheck must be an array")
+        if not parsed:
+            raise RegistryError(
+                f"{path}: accessCheck is an empty array; omit the field entirely when no access check applies"
+            )
+        _check_access_check_entry_content(parsed, path)
         return parsed
     entries: list[dict[str, str]] = []
     current: Optional[dict[str, str]] = None
@@ -559,7 +625,10 @@ def read_access_check(path: Path) -> Optional[list[dict[str, str]]]:
         key, raw = stripped.split(":", 1)
         current[key.strip()] = _access_scalar(raw.strip(), path)
     if not entries:
-        raise RegistryError(f"{path}: accessCheck is present but empty; use [] for any-org")
+        raise RegistryError(
+            f"{path}: accessCheck is present but empty; omit the field entirely when no access check applies"
+        )
+    _check_access_check_entry_content(entries, path)
     return entries
 
 
@@ -642,22 +711,6 @@ def skill_directories(root: Path) -> dict[str, Path]:
             raise RegistryError(f"{skill_file}: inventory name mismatch")
         result[entry.name] = entry
     return result
-
-
-def source_variant(
-    skill_dir: Path, *, safety_root: Optional[Path] = None,
-    executable_paths: Optional[set[str]] = None,
-) -> dict[str, str]:
-    record = read_skill(skill_dir / "SKILL.md")
-    return {
-        "description": record["description"],
-        "skillMdSha256": sha256_file(skill_dir / "SKILL.md"),
-        "treeSha256": canonical_tree_sha256(
-            skill_dir,
-            safety_root=safety_root,
-            executable_paths=executable_paths,
-        ),
-    }
 
 
 def normalize_public_repository(origin: str) -> str:
@@ -824,11 +877,18 @@ def _valid_hash(value) -> bool:
 
 
 def _valid_access_check(value) -> bool:
-    """Validate the tri-state accessCheck: ``None`` (undeclared) or a list of
-    ``{type, value}`` entries (``[]`` = any org). Mirrors the canonical schema in
+    """Validate the accessCheck *shape*: ``None`` (undeclared) or a list of
+    ``{type, value}`` entries. Mirrors the canonical JSON Schema in
     scripts/validate-skills.ts exactly: ``type`` in the fixed enum, ``value`` any
     string (no emptiness or control-character constraint), exact ``{type, value}``
-    keys. ``None`` and ``[]`` are kept distinct — never collapsed."""
+    keys, no length constraint. This is a pure shape check, not a current-authoring
+    policy check — it intentionally still accepts ``[]`` because historical public
+    manifests (frozen before the accessCheck: [] ban) legitimately contain it, and
+    this function's contract is "does this parse as the schema," not "would this
+    pass today's SKILL.md authoring rules." The authoring-time ban on a *new*
+    empty array lives in ``read_access_check`` (this module) and the matching
+    imperative check in scripts/validate-skills.ts — neither of which this
+    function polices."""
     if value is None:
         return True
     if type(value) is not list:
