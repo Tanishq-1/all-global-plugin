@@ -3,14 +3,22 @@
     "superpowers": {
       "version": "6.3.0",
       "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:28.289Z"
+      "snapshot_commit": "816bcff60714d07ec32dac89d85a3a76d06c996a",
+      "last_updated": "2026-09-03T12:13:28.289Z",
+      "history": [
+        {
+          "repo_commit": "816bcff60714d07ec32dac89d85a3a76d06c996a",
+          "version": "6.3.0",
+          "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+          "ts": "2026-09-03T12:13:28.289Z"
+        }
+      ]
     },
     "karpathy-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2",
-      "snapshot_commit": "2c606141936f1eeef17fa3043a72095b4765b9c2",
-      "last_updated": "2026-08-26T11:25:45.291Z"
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:29.623Z"
     },
     "mattpocock-skills": {
       "version": "1.2.3",
