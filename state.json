@@ -3,8 +3,8 @@
     "superpowers": {
       "version": "6.3.0",
       "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "snapshot_commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "last_updated": "2026-08-26T11:25:32.567Z"
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:28.289Z"
     },
     "karpathy-skills": {
       "version": "1.0.0",
