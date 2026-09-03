@@ -143,14 +143,22 @@
     "sf-skills": {
       "version": "1.46.0",
       "upstream_commit_sha": "a1d2875a84367498729e0451146230b1eb2e128e",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:49.906Z"
+      "snapshot_commit": "863e07d10fb1ad6cb0de01a58fce306ad21b646c",
+      "last_updated": "2026-09-03T12:13:49.906Z",
+      "history": [
+        {
+          "repo_commit": "863e07d10fb1ad6cb0de01a58fce306ad21b646c",
+          "version": "1.46.0",
+          "upstream_commit_sha": "a1d2875a84367498729e0451146230b1eb2e128e",
+          "ts": "2026-09-03T12:13:49.906Z"
+        }
+      ]
     },
     "ecc": {
-      "version": "2.2.0",
-      "upstream_commit_sha": "005eff40fd4a4ac005da7a70e713459175385516",
-      "snapshot_commit": "005eff40fd4a4ac005da7a70e713459175385516",
-      "last_updated": "2026-08-31T05:57:13.905Z"
+      "version": "2.2.1",
+      "upstream_commit_sha": "22e8cf01d0b54719b3a49002fab2ccbda4ff5b9e",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:52.827Z"
     }
   }
 }
