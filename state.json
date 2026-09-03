@@ -59,14 +59,22 @@
     "anthropic-doc-skills": {
       "version": null,
       "upstream_commit_sha": "53048666b05b4799081517d00e09e0a2dd688678",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:37.657Z"
+      "snapshot_commit": "0dcee2a87ba99efdcd6f3473679a214e36ce2733",
+      "last_updated": "2026-09-03T12:13:37.657Z",
+      "history": [
+        {
+          "repo_commit": "0dcee2a87ba99efdcd6f3473679a214e36ce2733",
+          "version": null,
+          "upstream_commit_sha": "53048666b05b4799081517d00e09e0a2dd688678",
+          "ts": "2026-09-03T12:13:37.657Z"
+        }
+      ]
     },
     "ui-ux-pro-max": {
       "version": "2.13.0",
-      "upstream_commit_sha": "e4f45473691e4b389519ee4bc359a3d6df666c26",
-      "snapshot_commit": "e4f45473691e4b389519ee4bc359a3d6df666c26",
-      "last_updated": "2026-08-26T11:27:11.102Z"
+      "upstream_commit_sha": "91c193ac059b487d13ce535c7015b021eb71c841",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:40.115Z"
     },
     "gsap-skills": {
       "version": "1.0.0",
