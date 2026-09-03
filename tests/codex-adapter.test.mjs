@@ -6,6 +6,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { syncCodex } from '../scripts/lib/adapters/codex.mjs'
 
+// Hermetic: a contributor with CODEX_HOME set would have these tests read/
+// rewrite their real ~/.codex/config.toml instead of the fixture home.
+delete process.env.CODEX_HOME
+
 function repo(servers) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-codex-'))
   const dest = path.join(root, 'universal-plugin', '_universal', 'oss', 'plug-a')

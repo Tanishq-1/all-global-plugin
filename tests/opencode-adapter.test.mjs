@@ -6,6 +6,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { syncOpencode } from '../scripts/lib/adapters/opencode.mjs'
 
+// Hermetic: GitHub ubuntu runners export XDG_CONFIG_HOME, which the adapter
+// honors before the passed home — it would look at the runner's real config
+// instead of the fixture home below and skip every write.
+delete process.env.XDG_CONFIG_HOME
+
 const START = '// agp:skills-start'
 const END = '// agp:skills-end'
 

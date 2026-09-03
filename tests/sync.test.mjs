@@ -6,6 +6,14 @@ import os from 'node:os'
 import path from 'node:path'
 import { runSync } from '../scripts/cmd/sync.mjs'
 
+// Hermetic: CI runners export XDG_CONFIG_HOME; contributor machines may set
+// CLAUDE_CONFIG_DIR/CODEX_HOME. The adapters honor these env overrides before
+// the passed home, so ambient values would redirect fixture writes to real
+// user configs (or make the adapter skip, failing on runners).
+delete process.env.XDG_CONFIG_HOME
+delete process.env.CLAUDE_CONFIG_DIR
+delete process.env.CODEX_HOME
+
 function seed() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-sync-'))
   const dest = path.join(root, 'universal-plugin', '_universal', 'oss', 'plug-a')

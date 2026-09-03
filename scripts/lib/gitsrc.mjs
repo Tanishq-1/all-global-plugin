@@ -41,7 +41,8 @@ export function commitAll(dir, message) {
 }
 
 export function createTag(repoRoot, name, message) {
-  const r = run(['-C', repoRoot, 'tag', '-a', name, '-m', message])
+  const r = run(['-C', repoRoot, '-c', 'user.email=agp@local', '-c', 'user.name=agp',
+                 'tag', '-a', name, '-m', message])
   if (r.status !== 0) throw new Error(`git tag failed for ${name}: ${r.stderr}`)
 }
 

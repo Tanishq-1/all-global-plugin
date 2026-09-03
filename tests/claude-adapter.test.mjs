@@ -6,6 +6,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { syncClaude } from '../scripts/lib/adapters/claude.mjs'
 
+// Hermetic: a contributor with CLAUDE_CONFIG_DIR set would have these tests
+// read/rewrite their real ~/.claude/settings.json instead of the fixture home.
+delete process.env.CLAUDE_CONFIG_DIR
+
 function repo() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agp-claude-'))
   fs.mkdirSync(path.join(root, 'universal-plugin', '_universal', 'oss', 'plug-a'), { recursive: true })

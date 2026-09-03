@@ -66,6 +66,36 @@ test('commitAll works with no ambient git identity (CI runner)', async () => {
   }
 })
 
+// Regression: createTag must carry its own identity too — annotated tags record
+// a tagger, and CI runners have none (same hermetic empty-config technique as
+// the commitAll test above).
+test('createTag works with no ambient git identity (CI runner)', async () => {
+  const { root } = fixture()
+  const emptyCfg = path.join(root, 'empty-git-config-tag')
+  fs.writeFileSync(emptyCfg, '')
+  const prevGlobal = process.env.GIT_CONFIG_GLOBAL
+  const prevSystem = process.env.GIT_CONFIG_SYSTEM
+  process.env.GIT_CONFIG_GLOBAL = emptyCfg
+  process.env.GIT_CONFIG_SYSTEM = emptyCfg
+  try {
+    fs.writeFileSync(path.join(root, 'universal-plugin', 'x.txt'), 'x')
+    const { commitAll, createTag } = await import('../scripts/lib/gitsrc.mjs')
+    const sha = commitAll(root, 'tag-basis')
+    assert.match(sha, /^[0-9a-f]{40}$/)
+    createTag(root, 'batch/hermetic', 'hermetic batch')
+    const tagList = execFileSync('git', ['-C', root, 'tag', '-l'], { encoding: 'utf8' }).trim()
+    assert.equal(tagList, 'batch/hermetic')
+    const tagger = execFileSync('git', ['-C', root, 'for-each-ref',
+      'refs/tags/batch/hermetic', '--format=%(taggername) %(taggeremail)'], { encoding: 'utf8' })
+    assert.equal(tagger.toString().trim(), 'agp <agp@local>')
+  } finally {
+    if (prevGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL
+    else process.env.GIT_CONFIG_GLOBAL = prevGlobal
+    if (prevSystem === undefined) delete process.env.GIT_CONFIG_SYSTEM
+    else process.env.GIT_CONFIG_SYSTEM = prevSystem
+  }
+})
+
 test('appendHistory and recordBatch accumulate across calls', async () => {
   const { root } = fixture()
   const { appendHistory, recordBatch, readState } = await import('../scripts/lib/state.mjs')
