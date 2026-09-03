@@ -73,14 +73,22 @@
     "ui-ux-pro-max": {
       "version": "2.13.0",
       "upstream_commit_sha": "91c193ac059b487d13ce535c7015b021eb71c841",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:40.115Z"
+      "snapshot_commit": "1ce6e2cc3c6398734de308a00a033f810220add1",
+      "last_updated": "2026-09-03T12:13:40.115Z",
+      "history": [
+        {
+          "repo_commit": "1ce6e2cc3c6398734de308a00a033f810220add1",
+          "version": "2.13.0",
+          "upstream_commit_sha": "91c193ac059b487d13ce535c7015b021eb71c841",
+          "ts": "2026-09-03T12:13:40.115Z"
+        }
+      ]
     },
     "gsap-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
-      "snapshot_commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
-      "last_updated": "2026-08-26T11:27:30.001Z"
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:42.049Z"
     },
     "supabase-agent-skills": {
       "version": "0.1.8",
