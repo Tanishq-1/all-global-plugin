@@ -87,14 +87,22 @@
     "gsap-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:42.049Z"
+      "snapshot_commit": "408fa8dc19a96d6f9948893fab596b32e1f4cd50",
+      "last_updated": "2026-09-03T12:13:42.049Z",
+      "history": [
+        {
+          "repo_commit": "408fa8dc19a96d6f9948893fab596b32e1f4cd50",
+          "version": "1.0.0",
+          "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+          "ts": "2026-09-03T12:13:42.049Z"
+        }
+      ]
     },
     "supabase-agent-skills": {
       "version": "0.1.8",
       "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
-      "snapshot_commit": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
-      "last_updated": "2026-08-26T11:27:37.460Z"
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:43.442Z"
     },
     "expo-skills": {
       "version": null,
