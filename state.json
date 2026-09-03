@@ -31,14 +31,22 @@
     "mattpocock-skills": {
       "version": "1.2.3",
       "upstream_commit_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:30.685Z"
+      "snapshot_commit": "e209cf613cfbd6d2af57f947028ad914cc4905a9",
+      "last_updated": "2026-09-03T12:13:30.685Z",
+      "history": [
+        {
+          "repo_commit": "e209cf613cfbd6d2af57f947028ad914cc4905a9",
+          "version": "1.2.3",
+          "upstream_commit_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
+          "ts": "2026-09-03T12:13:30.685Z"
+        }
+      ]
     },
     "prompts-chat": {
       "version": "0.1.0",
-      "upstream_commit_sha": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
-      "snapshot_commit": "062d7d94d70eb5ea7a65616eba8a0fb5edf8745c",
-      "last_updated": "2026-08-26T11:26:23.372Z"
+      "upstream_commit_sha": "414b71ae0be4e25564543d4b5ecb3bcd1e7c9876",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:34.943Z"
     },
     "anthropic-doc-skills": {
       "version": null,
