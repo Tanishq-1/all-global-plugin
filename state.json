@@ -17,14 +17,22 @@
     "karpathy-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:29.623Z"
+      "snapshot_commit": "9ab7b7d3e4b537f923e7f36480251991de6de178",
+      "last_updated": "2026-09-03T12:13:29.623Z",
+      "history": [
+        {
+          "repo_commit": "9ab7b7d3e4b537f923e7f36480251991de6de178",
+          "version": "1.0.0",
+          "upstream_commit_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2",
+          "ts": "2026-09-03T12:13:29.623Z"
+        }
+      ]
     },
     "mattpocock-skills": {
       "version": "1.2.3",
       "upstream_commit_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
-      "snapshot_commit": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
-      "last_updated": "2026-08-26T11:25:52.686Z"
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:30.685Z"
     },
     "prompts-chat": {
       "version": "0.1.0",
