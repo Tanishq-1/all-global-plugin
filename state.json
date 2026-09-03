@@ -115,14 +115,22 @@
     "expo-skills": {
       "version": null,
       "upstream_commit_sha": "80090ccda0ce5973c1354743d1d02602664b15be",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-03T12:13:44.804Z"
+      "snapshot_commit": "9991b35182fd7ad29c209513f0d457578b01a1f8",
+      "last_updated": "2026-09-03T12:13:44.804Z",
+      "history": [
+        {
+          "repo_commit": "9991b35182fd7ad29c209513f0d457578b01a1f8",
+          "version": null,
+          "upstream_commit_sha": "80090ccda0ce5973c1354743d1d02602664b15be",
+          "ts": "2026-09-03T12:13:44.804Z"
+        }
+      ]
     },
     "azure-skills": {
-      "version": "1.2.35",
-      "upstream_commit_sha": "fa01c311406ba644e59463318a66f359890105c3",
-      "snapshot_commit": "fa01c311406ba644e59463318a66f359890105c3",
-      "last_updated": "2026-08-26T11:28:39.453Z"
+      "version": "1.2.40",
+      "upstream_commit_sha": "2fe0f02665574305657c6e79a619c6b9554e53dc",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-03T12:13:46.520Z"
     },
     "sf-skills": {
       "version": "1.42.0",

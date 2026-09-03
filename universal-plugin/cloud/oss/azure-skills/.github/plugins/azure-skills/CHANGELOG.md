@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.2.40
+
+- chore: clean duplicate trigger words in Foundry Skill description ([#3145](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3145))
+
+## 1.2.39
+
+- feat: Add more validate rules ([#3130](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3130))
+
+## 1.2.38
+
+- feat: route explicit Foundry agent validation ([#3128](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3128))
+
+## 1.2.37
+
+- Add agent validation rules ([#3127](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3127))
+
+## 1.2.36
+
+- feat: add Foundry agent validation skill entry point ([#3115](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3115))
+
 ## 1.2.35
 
 - fix: role ([#3114](https://github.com/microsoft/GitHub-Copilot-for-Azure/pull/3114))
