@@ -30,7 +30,10 @@ export function headSha(dir) {
 export function commitAll(dir, message) {
   const present = COMMIT_PATHS.filter(p => fs.existsSync(path.join(dir, p)))
   if (present.length) run(['-C', dir, 'add', '--', ...present])
-  const r = run(['-C', dir, 'commit', '-q', '-m', message])
+  // CI runners have no ambient git identity; carry one per invocation (matches
+  // the -c pattern the test fixtures use). Explicit repo config wins over -c.
+  const r = run(['-C', dir, '-c', 'user.email=agp@local', '-c', 'user.name=agp',
+                 'commit', '-q', '-m', message])
   if (r.status !== 0 && !/nothing( added)? to commit/.test(r.stdout + r.stderr)) {
     throw new Error(`git commit failed: ${r.stderr}`)
   }

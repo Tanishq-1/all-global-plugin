@@ -40,6 +40,32 @@ test('commitAll returns new SHA; null on no-op', async () => {
   assert.equal(again, null)
 })
 
+// Regression: CI runners have no ambient git identity — commitAll must carry
+// its own. Hermetic env: point GIT_CONFIG_GLOBAL/SYSTEM at empty files so the
+// machine's real global config (with user.email) can't mask a regression.
+test('commitAll works with no ambient git identity (CI runner)', async () => {
+  const { root } = fixture()
+  const emptyCfg = path.join(root, 'empty-git-config')
+  fs.writeFileSync(emptyCfg, '')
+  const prevGlobal = process.env.GIT_CONFIG_GLOBAL
+  const prevSystem = process.env.GIT_CONFIG_SYSTEM
+  process.env.GIT_CONFIG_GLOBAL = emptyCfg
+  process.env.GIT_CONFIG_SYSTEM = emptyCfg
+  try {
+    fs.writeFileSync(path.join(root, 'universal-plugin', 'x.txt'), 'x')
+    const { commitAll } = await import('../scripts/lib/gitsrc.mjs')
+    const sha = commitAll(root, 'hermetic-commit')
+    assert.match(sha, /^[0-9a-f]{40}$/)
+    const log = execFileSync('git', ['-C', root, 'log', '-1', '--format=%an <%ae>'])
+    assert.equal(log.toString().trim(), 'agp <agp@local>')
+  } finally {
+    if (prevGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL
+    else process.env.GIT_CONFIG_GLOBAL = prevGlobal
+    if (prevSystem === undefined) delete process.env.GIT_CONFIG_SYSTEM
+    else process.env.GIT_CONFIG_SYSTEM = prevSystem
+  }
+})
+
 test('appendHistory and recordBatch accumulate across calls', async () => {
   const { root } = fixture()
   const { appendHistory, recordBatch, readState } = await import('../scripts/lib/state.mjs')
