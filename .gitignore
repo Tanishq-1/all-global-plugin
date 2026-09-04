@@ -4,3 +4,4 @@ local.json
 .superpowers/
 universal-plugin/**/*.old-*
 docs/
+all-global-plugin-docs/
