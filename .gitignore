@@ -3,3 +3,4 @@ paths.local.json
 local.json
 .superpowers/
 universal-plugin/**/*.old-*
+docs/

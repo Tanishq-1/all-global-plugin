@@ -5,8 +5,6 @@ and maintained by a small manifest-driven CLI. This is the standalone lab repo t
 the proven patterns of `claude-global-plugins` (manifest CLI, atomic swap, validation
 gating) into a portable, cross-tool design.
 
-Design spec: [`docs/superpowers/specs/2026-08-26-all-global-plugin-design.md`](docs/superpowers/specs/2026-08-26-all-global-plugin-design.md)
-
 ## Folder layout (spec §3)
 
 ```

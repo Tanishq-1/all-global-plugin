@@ -185,8 +185,16 @@
     "n8n": {
       "version": "2.37.0",
       "upstream_commit_sha": "ed541bc1e74234784835cca4314efc2201999a85",
-      "snapshot_commit": "pending",
-      "last_updated": "2026-09-04T07:45:44.954Z"
+      "snapshot_commit": "3d5ae9e0911d5b6c759e3d449ef3803de43fde0b",
+      "last_updated": "2026-09-04T07:45:44.954Z",
+      "history": [
+        {
+          "repo_commit": "3d5ae9e0911d5b6c759e3d449ef3803de43fde0b",
+          "version": "2.37.0",
+          "upstream_commit_sha": "ed541bc1e74234784835cca4314efc2201999a85",
+          "ts": "2026-09-04T07:45:44.954Z"
+        }
+      ]
     }
   },
   "batches": [
