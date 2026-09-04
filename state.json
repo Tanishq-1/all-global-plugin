@@ -167,6 +167,12 @@
           "ts": "2026-09-03T12:13:52.827Z"
         }
       ]
+    },
+    "claude-gcp": {
+      "version": "0.1.0-beta",
+      "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-04T07:30:02.549Z"
     }
   },
   "batches": [

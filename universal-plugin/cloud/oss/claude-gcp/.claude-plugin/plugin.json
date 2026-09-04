@@ -1,0 +1,26 @@
+{
+  "name": "gcp-plugin",
+  "version": "0.1.0-beta",
+  "description": "GCP plugin for Claude Code. Skills for Cloud Run, Cloud Build, IAM, and Secret Manager. Includes deploy agent, safety hooks, and starter templates.",
+  "author": "Shamis Ali (Orchestrator AI)",
+  "homepage": "https://github.com/shamis6ali/claude-gcp",
+  "skills": [
+    "skills/cloud-run",
+    "skills/cloud-build",
+    "skills/iam",
+    "skills/secret-manager"
+  ],
+  "agents": [
+    "agents/deploy-agent.md"
+  ],
+  "hooks": [
+    "hooks/hooks.json",
+    "hooks/gcp-command-guard.sh",
+    "hooks/pre-deploy-check.sh",
+    "hooks/post-deploy-verify.sh"
+  ],
+  "commands": [
+    "commands/gcp-deploy.md",
+    "commands/gcp-status.md"
+  ]
+}

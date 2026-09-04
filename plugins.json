@@ -193,6 +193,20 @@
         "*"
       ],
       "enabled_by_default": false
+    },
+    {
+      "name": "claude-gcp",
+      "category": "cloud",
+      "tier": "oss",
+      "url": "https://github.com/shamis6ali/claude-gcp",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }
