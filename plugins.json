@@ -207,6 +207,20 @@
       "platforms": [
         "*"
       ]
+    },
+    {
+      "name": "n8n",
+      "category": "backend",
+      "tier": "oss",
+      "url": "https://github.com/n8n-io/n8n",
+      "pin": null,
+      "wrapper": false,
+      "skill_entry": null,
+      "plugin_keys": [],
+      "marketplace_key": null,
+      "platforms": [
+        "*"
+      ]
     }
   ]
 }

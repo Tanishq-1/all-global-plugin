@@ -171,8 +171,22 @@
     "claude-gcp": {
       "version": "0.1.0-beta",
       "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
+      "snapshot_commit": "3705e8a4db945e3d05a2d181650fe2d47352d5c0",
+      "last_updated": "2026-09-04T07:30:02.549Z",
+      "history": [
+        {
+          "repo_commit": "3705e8a4db945e3d05a2d181650fe2d47352d5c0",
+          "version": "0.1.0-beta",
+          "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
+          "ts": "2026-09-04T07:30:02.549Z"
+        }
+      ]
+    },
+    "n8n": {
+      "version": "2.37.0",
+      "upstream_commit_sha": "ed541bc1e74234784835cca4314efc2201999a85",
       "snapshot_commit": "pending",
-      "last_updated": "2026-09-04T07:30:02.549Z"
+      "last_updated": "2026-09-04T07:45:44.954Z"
     }
   },
   "batches": [
