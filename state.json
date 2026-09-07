@@ -163,7 +163,7 @@
     "expo-skills": {
       "version": null,
       "upstream_commit_sha": "d0075ffa09928f1edb3e7ac4f5af07586d4b344d",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "a7828a6152d87c72f6627d223e436ccbbfc3b86e",
       "last_updated": "2026-09-07T09:28:56.519Z",
       "history": [
         {
@@ -171,14 +171,20 @@
           "version": null,
           "upstream_commit_sha": "80090ccda0ce5973c1354743d1d02602664b15be",
           "ts": "2026-09-03T12:13:44.804Z"
+        },
+        {
+          "repo_commit": "a7828a6152d87c72f6627d223e436ccbbfc3b86e",
+          "version": null,
+          "upstream_commit_sha": "d0075ffa09928f1edb3e7ac4f5af07586d4b344d",
+          "ts": "2026-09-07T09:28:56.519Z"
         }
       ]
     },
     "azure-skills": {
       "version": "1.2.40",
-      "upstream_commit_sha": "2fe0f02665574305657c6e79a619c6b9554e53dc",
-      "snapshot_commit": "0610e7ba464cdfb4f71bf1a7baee87f85544f309",
-      "last_updated": "2026-09-03T12:13:46.520Z",
+      "upstream_commit_sha": "49e1542b04d296052f31ac62abe68562d4cc1204",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-07T09:28:58.453Z",
       "history": [
         {
           "repo_commit": "0610e7ba464cdfb4f71bf1a7baee87f85544f309",
