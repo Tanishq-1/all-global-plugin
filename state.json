@@ -43,7 +43,7 @@
     "mattpocock-skills": {
       "version": "1.2.3",
       "upstream_commit_sha": "3cca18b368ae95cdbdebbff572ccafa662551015",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "22bfecd743a94d15e908eda212c25cf55037e206",
       "last_updated": "2026-09-07T09:28:45.114Z",
       "history": [
         {
@@ -51,14 +51,20 @@
           "version": "1.2.3",
           "upstream_commit_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
           "ts": "2026-09-03T12:13:30.685Z"
+        },
+        {
+          "repo_commit": "22bfecd743a94d15e908eda212c25cf55037e206",
+          "version": "1.2.3",
+          "upstream_commit_sha": "3cca18b368ae95cdbdebbff572ccafa662551015",
+          "ts": "2026-09-07T09:28:45.114Z"
         }
       ]
     },
     "prompts-chat": {
       "version": "0.1.0",
-      "upstream_commit_sha": "414b71ae0be4e25564543d4b5ecb3bcd1e7c9876",
-      "snapshot_commit": "61d6e7bd609e17e62dfb9990c662081e6d6684e1",
-      "last_updated": "2026-09-03T12:13:34.943Z",
+      "upstream_commit_sha": "eaab6b14a085f3b9e4461be90367fcd9a16d3204",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-07T09:28:49.351Z",
       "history": [
         {
           "repo_commit": "61d6e7bd609e17e62dfb9990c662081e6d6684e1",
