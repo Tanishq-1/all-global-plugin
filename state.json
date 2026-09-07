@@ -263,7 +263,7 @@
     "n8n": {
       "version": "2.37.0",
       "upstream_commit_sha": "9491b328ab8a9ab40c34164203e12e615bf2231e",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "0d7b094da80a60a62d084ac7a504b082a2db27b0",
       "last_updated": "2026-09-07T09:29:17.688Z",
       "history": [
         {
@@ -271,6 +271,12 @@
           "version": "2.37.0",
           "upstream_commit_sha": "ed541bc1e74234784835cca4314efc2201999a85",
           "ts": "2026-09-04T07:45:44.954Z"
+        },
+        {
+          "repo_commit": "0d7b094da80a60a62d084ac7a504b082a2db27b0",
+          "version": "2.37.0",
+          "upstream_commit_sha": "9491b328ab8a9ab40c34164203e12e615bf2231e",
+          "ts": "2026-09-07T09:29:17.688Z"
         }
       ]
     }
@@ -330,6 +336,71 @@
         "ecc": {
           "pre_version": "2.2.0",
           "pre_upstream_sha": "005eff40fd4a4ac005da7a70e713459175385516"
+        }
+      }
+    },
+    {
+      "id": "batch/2026-09-07T09-29-19.191Z",
+      "pre": "49943ae798399a8c04d8c81c9084fe722b1434fd",
+      "post": "0d7b094da80a60a62d084ac7a504b082a2db27b0",
+      "at": "2026-09-07T09:29:19.191Z",
+      "tag": "batch/2026-09-07T09-29-19.191Z",
+      "plugins": {
+        "superpowers": {
+          "pre_version": "6.3.0",
+          "pre_upstream_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797"
+        },
+        "karpathy-skills": {
+          "pre_version": "1.0.0",
+          "pre_upstream_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2"
+        },
+        "mattpocock-skills": {
+          "pre_version": "1.2.3",
+          "pre_upstream_sha": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76"
+        },
+        "prompts-chat": {
+          "pre_version": "0.1.0",
+          "pre_upstream_sha": "414b71ae0be4e25564543d4b5ecb3bcd1e7c9876"
+        },
+        "anthropic-doc-skills": {
+          "pre_version": null,
+          "pre_upstream_sha": "53048666b05b4799081517d00e09e0a2dd688678"
+        },
+        "ui-ux-pro-max": {
+          "pre_version": "2.13.0",
+          "pre_upstream_sha": "91c193ac059b487d13ce535c7015b021eb71c841"
+        },
+        "gsap-skills": {
+          "pre_version": "1.0.0",
+          "pre_upstream_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760"
+        },
+        "supabase-agent-skills": {
+          "pre_version": "0.1.8",
+          "pre_upstream_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3"
+        },
+        "expo-skills": {
+          "pre_version": null,
+          "pre_upstream_sha": "80090ccda0ce5973c1354743d1d02602664b15be"
+        },
+        "azure-skills": {
+          "pre_version": "1.2.40",
+          "pre_upstream_sha": "2fe0f02665574305657c6e79a619c6b9554e53dc"
+        },
+        "sf-skills": {
+          "pre_version": "1.46.0",
+          "pre_upstream_sha": "a1d2875a84367498729e0451146230b1eb2e128e"
+        },
+        "ecc": {
+          "pre_version": "2.2.1",
+          "pre_upstream_sha": "22e8cf01d0b54719b3a49002fab2ccbda4ff5b9e"
+        },
+        "claude-gcp": {
+          "pre_version": "0.1.0-beta",
+          "pre_upstream_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30"
+        },
+        "n8n": {
+          "pre_version": "2.37.0",
+          "pre_upstream_sha": "ed541bc1e74234784835cca4314efc2201999a85"
         }
       }
     }

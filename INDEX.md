@@ -1,6 +1,6 @@
 # Plugin Catalog
 
-_Generated 2026-09-03 — do not edit by hand_
+_Generated 2026-09-07 — do not edit by hand_
 
 ## _universal
 
@@ -17,12 +17,14 @@ _Generated 2026-09-03 — do not edit by hand_
 | name | tier | url |
 |---|---|---|
 | supabase-agent-skills | oss | https://github.com/supabase/agent-skills |
+| n8n | oss | https://github.com/n8n-io/n8n |
 
 ## cloud
 
 | name | tier | url |
 |---|---|---|
 | azure-skills | oss | https://github.com/microsoft/azure-skills |
+| claude-gcp | oss | https://github.com/shamis6ali/claude-gcp |
 
 ## frontend
 
