@@ -243,7 +243,7 @@
     "claude-gcp": {
       "version": "0.1.0-beta",
       "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "394261f64212d2c5074f3d47eb4f71bede58d01b",
       "last_updated": "2026-09-07T09:29:06.547Z",
       "history": [
         {
@@ -251,14 +251,20 @@
           "version": "0.1.0-beta",
           "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
           "ts": "2026-09-04T07:30:02.549Z"
+        },
+        {
+          "repo_commit": "394261f64212d2c5074f3d47eb4f71bede58d01b",
+          "version": "0.1.0-beta",
+          "upstream_commit_sha": "87b78ae6902b3006b8c4fd3594be9c055f2a5d30",
+          "ts": "2026-09-07T09:29:06.547Z"
         }
       ]
     },
     "n8n": {
       "version": "2.37.0",
-      "upstream_commit_sha": "ed541bc1e74234784835cca4314efc2201999a85",
-      "snapshot_commit": "3d5ae9e0911d5b6c759e3d449ef3803de43fde0b",
-      "last_updated": "2026-09-04T07:45:44.954Z",
+      "upstream_commit_sha": "9491b328ab8a9ab40c34164203e12e615bf2231e",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-07T09:29:17.688Z",
       "history": [
         {
           "repo_commit": "3d5ae9e0911d5b6c759e3d449ef3803de43fde0b",
