@@ -83,7 +83,7 @@
     "anthropic-doc-skills": {
       "version": null,
       "upstream_commit_sha": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "a4862a91e9f31d41c8b70e2eaceda263fc62a03f",
       "last_updated": "2026-09-07T09:28:51.249Z",
       "history": [
         {
@@ -91,14 +91,20 @@
           "version": null,
           "upstream_commit_sha": "53048666b05b4799081517d00e09e0a2dd688678",
           "ts": "2026-09-03T12:13:37.657Z"
+        },
+        {
+          "repo_commit": "a4862a91e9f31d41c8b70e2eaceda263fc62a03f",
+          "version": null,
+          "upstream_commit_sha": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+          "ts": "2026-09-07T09:28:51.249Z"
         }
       ]
     },
     "ui-ux-pro-max": {
       "version": "2.13.0",
-      "upstream_commit_sha": "91c193ac059b487d13ce535c7015b021eb71c841",
-      "snapshot_commit": "1ce6e2cc3c6398734de308a00a033f810220add1",
-      "last_updated": "2026-09-03T12:13:40.115Z",
+      "upstream_commit_sha": "4aad0584d92131626b16d4ff4d77f0455385013c",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-07T09:28:53.040Z",
       "history": [
         {
           "repo_commit": "1ce6e2cc3c6398734de308a00a033f810220add1",

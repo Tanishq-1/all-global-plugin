@@ -259,7 +259,6 @@ uipro init --ai kilocode    # KiloCode
 uipro init --ai warp        # Warp
 uipro init --ai augment     # Augment
 uipro init --ai codewhale   # CodeWhale
-uipro init --ai openclaw    # OpenClaw
 uipro init --ai universal   # Universal / Agent Standard (.agents/skills/)
 uipro init --ai all         # All assistants
 ```
@@ -281,6 +280,7 @@ uipro versions              # List available versions
 uipro update                # Refresh skill files from installed CLI package
 uipro update --global       # Refresh global skill files from installed CLI package
 uipro init --offline        # Compatibility flag; installs bundled templates
+uipro init --dry-run        # Preview install actions without writing files
 uipro uninstall             # Remove skill (auto-detect platform)
 uipro uninstall --ai claude # Remove specific platform
 uipro uninstall --global    # Remove from global install
@@ -484,6 +484,7 @@ npm run typecheck
 # `npm run build` uses Bun when available and falls back to TypeScript compiler output after `npm ci`.
 npm run build
 node dist/index.js init --ai claude --offline  # Test in a temp folder
+node dist/index.js init --ai claude --dry-run  # Preview install actions (no writes)
 
 # 6. Create PR (never push directly to main)
 git checkout -b feat/your-feature
