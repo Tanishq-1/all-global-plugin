@@ -203,7 +203,7 @@
     "sf-skills": {
       "version": "1.51.0",
       "upstream_commit_sha": "7e04d4744792ae2defb7f4da24fe85cbdf6f6e5a",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "5ef7720ff244a7f66fe8898250fc05aa5590beaf",
       "last_updated": "2026-09-07T09:29:02.091Z",
       "history": [
         {
@@ -211,14 +211,20 @@
           "version": "1.46.0",
           "upstream_commit_sha": "a1d2875a84367498729e0451146230b1eb2e128e",
           "ts": "2026-09-03T12:13:49.906Z"
+        },
+        {
+          "repo_commit": "5ef7720ff244a7f66fe8898250fc05aa5590beaf",
+          "version": "1.51.0",
+          "upstream_commit_sha": "7e04d4744792ae2defb7f4da24fe85cbdf6f6e5a",
+          "ts": "2026-09-07T09:29:02.091Z"
         }
       ]
     },
     "ecc": {
       "version": "2.2.1",
-      "upstream_commit_sha": "22e8cf01d0b54719b3a49002fab2ccbda4ff5b9e",
-      "snapshot_commit": "962bd2464522c96ea3e311e6432f75fc88040f5e",
-      "last_updated": "2026-09-03T12:13:52.827Z",
+      "upstream_commit_sha": "e04ea0b9cc8248686edf5ac751cadff550e162b8",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-07T09:29:04.829Z",
       "history": [
         {
           "repo_commit": "962bd2464522c96ea3e311e6432f75fc88040f5e",
