@@ -1,3 +1,48 @@
+# [1.51.0](https://github.com/forcedotcom/sf-skills/compare/1.50.0...1.51.0) (2026-09-05)
+
+
+### Features
+
+* @W-24104658 Integrate PR [#1708](https://github.com/forcedotcom/sf-skills/issues/1708) to main ([8fbbdc4](https://github.com/forcedotcom/sf-skills/commit/8fbbdc428b9c0b1347c23eb8c9ece248b5d54e16))
+
+
+
+# [1.50.0](https://github.com/forcedotcom/sf-skills/compare/1.49.0...1.50.0) (2026-09-04)
+
+
+### Features
+
+* Release 13 new field service skills @W-24084305@ ([81dc017](https://github.com/forcedotcom/sf-skills/commit/81dc017762810a493fe6170b04d263114c34597f))
+
+
+
+# [1.49.0](https://github.com/forcedotcom/sf-skills/compare/1.48.0...1.49.0) (2026-09-04)
+
+
+### Features
+
+* Release 1 skill updated - education-cloud-multi-campus-configure @W-24038743@ ([17085e2](https://github.com/forcedotcom/sf-skills/commit/17085e28d55fa8d034703657d337a65ec40eca35))
+
+
+
+# [1.48.0](https://github.com/forcedotcom/sf-skills/compare/1.47.0...1.48.0) (2026-09-04)
+
+
+### Features
+
+* Release 22 new + 4 updated skills - Omni-Channel skill set + education-cloud-domain-configure @W-24038743@ ([032746b](https://github.com/forcedotcom/sf-skills/commit/032746b5bd31c16241ca63b047f868a03ff79a02))
+
+
+
+# [1.47.0](https://github.com/forcedotcom/sf-skills/compare/1.46.0...1.47.0) (2026-09-04)
+
+
+### Features
+
+* Release 13 skills new + 14 updated skills @W-24086520@ ([8efc01e](https://github.com/forcedotcom/sf-skills/commit/8efc01e652b58bd32aaeb0082985e505f15cad66))
+
+
+
 # [1.46.0](https://github.com/forcedotcom/sf-skills/compare/1.45.0...1.46.0) (2026-09-03)
 
 
