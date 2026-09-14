@@ -3,8 +3,8 @@
     "superpowers": {
       "version": "6.3.0",
       "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "snapshot_commit": "7691f09c9d3d11e949e5958cc9a7d6e924dceac6",
-      "last_updated": "2026-09-07T09:28:42.774Z",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-14T09:58:51.010Z",
       "history": [
         {
           "repo_commit": "816bcff60714d07ec32dac89d85a3a76d06c996a",
