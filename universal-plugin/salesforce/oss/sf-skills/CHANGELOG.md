@@ -1,3 +1,30 @@
+# [1.54.0](https://github.com/forcedotcom/sf-skills/compare/1.53.0...1.54.0) (2026-09-11)
+
+
+### Features
+
+* Release 1 skill new - service-agentforce-contact-center-coordinate @W-23703127@ ([ac4320c](https://github.com/forcedotcom/sf-skills/commit/ac4320c8eb856839852b306601b39bbbebd69946))
+
+
+
+# [1.53.0](https://github.com/forcedotcom/sf-skills/compare/1.52.0...1.53.0) (2026-09-08)
+
+
+### Features
+
+* Retire experience-content-media-search on main @W-23593326@ ([161b3f2](https://github.com/forcedotcom/sf-skills/commit/161b3f253944dd9b2be379a2289dabf7c5c56bea))
+
+
+
+# [1.52.0](https://github.com/forcedotcom/sf-skills/compare/1.51.0...1.52.0) (2026-09-07)
+
+
+### Features
+
+* Release 12 skills updated - field-service-* skills @W-24115654@ ([27777a5](https://github.com/forcedotcom/sf-skills/commit/27777a56bac9914719633b40fee51049cca8d866))
+
+
+
 # [1.51.0](https://github.com/forcedotcom/sf-skills/compare/1.50.0...1.51.0) (2026-09-05)
 
 
