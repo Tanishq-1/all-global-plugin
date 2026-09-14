@@ -3,7 +3,7 @@
     "superpowers": {
       "version": "6.3.0",
       "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "dd1a56bfb9f19ae4daaf7aa43ca494c6907ff0d3",
       "last_updated": "2026-09-14T09:58:51.010Z",
       "history": [
         {
@@ -17,14 +17,20 @@
           "version": "6.3.0",
           "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
           "ts": "2026-09-07T09:28:42.774Z"
+        },
+        {
+          "repo_commit": "dd1a56bfb9f19ae4daaf7aa43ca494c6907ff0d3",
+          "version": "6.3.0",
+          "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+          "ts": "2026-09-14T09:58:51.010Z"
         }
       ]
     },
     "karpathy-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "2c606141936f1eeef17fa3043a72095b4765b9c2",
-      "snapshot_commit": "f4e11d7ebaf86188150ac631b558e814f13cf959",
-      "last_updated": "2026-09-07T09:28:44.093Z",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-14T09:58:53.123Z",
       "history": [
         {
           "repo_commit": "9ab7b7d3e4b537f923e7f36480251991de6de178",
