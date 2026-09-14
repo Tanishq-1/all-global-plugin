@@ -159,7 +159,7 @@
     "gsap-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "af1090e156f4d6adfee02fa956e5b9546bcd6eac",
       "last_updated": "2026-09-14T09:59:07.032Z",
       "history": [
         {
@@ -173,14 +173,20 @@
           "version": "1.0.0",
           "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
           "ts": "2026-09-07T09:28:54.297Z"
+        },
+        {
+          "repo_commit": "af1090e156f4d6adfee02fa956e5b9546bcd6eac",
+          "version": "1.0.0",
+          "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+          "ts": "2026-09-14T09:59:07.032Z"
         }
       ]
     },
     "supabase-agent-skills": {
       "version": "0.1.8",
       "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
-      "snapshot_commit": "96772e817009cabee5f4c7e59ea9bd52de16b61e",
-      "last_updated": "2026-09-07T09:28:55.331Z",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-14T09:59:08.674Z",
       "history": [
         {
           "repo_commit": "f996d55e50b4f1079b08c33b59db2bde02da5640",
