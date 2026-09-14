@@ -1,3 +1,4 @@
+import { MAX_ITEMS_PER_PAGE } from '@n8n/api-types';
 import { LicenseState } from '@n8n/backend-common';
 import type { CredentialPayload } from '@n8n/backend-test-utils';
 import { createTeamProject, linkUserToProject, randomName, testDb } from '@n8n/backend-test-utils';
@@ -19,6 +20,7 @@ import { CredentialsTester } from '@/services/credentials-tester.service';
 import {
 	affixRoleToSaveCredential,
 	createCredentials,
+	createManyCredentials,
 	getCredentialSharings,
 } from '../shared/db/credentials';
 import { createCustomRoleWithScopeSlugs } from '../shared/db/roles';
@@ -125,6 +127,17 @@ describe('POST /credentials', () => {
 			const response = await authOwnerAgent.post('/credentials').send(invalidPayload);
 			expect(response.statusCode === 400 || response.statusCode === 415).toBe(true);
 		}
+	});
+
+	test('should fail with an unknown credential type', async () => {
+		const response = await authOwnerAgent.post('/credentials').send({
+			name: 'test credential',
+			type: 'notARealCredentialType',
+			data: { accessToken: 'abcdefghijklmnopqrstuvwxyz' },
+		});
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.message).toContain('not a known type');
 	});
 
 	test('should create credential in a team project when projectId is provided', async () => {
@@ -323,6 +336,64 @@ describe('POST /credentials', () => {
 			'Lacking permissions to reference external secrets in credentials',
 		);
 	});
+
+	test('should not include credential data in the response', async () => {
+		const payload = {
+			name: 'test credential',
+			type: 'githubApi',
+			data: {
+				accessToken: 'abcdefghijklmnopqrstuvwxyz',
+				user: 'test',
+				server: 'testServer',
+			},
+		};
+
+		const response = await authOwnerAgent.post('/credentials').send(payload);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).not.toHaveProperty('data');
+		expect(JSON.stringify(response.body)).not.toContain(payload.data.accessToken);
+	});
+
+	test('should ignore an unknown body key', async () => {
+		const payload = {
+			name: 'test credential',
+			type: 'githubApi',
+			data: { accessToken: 'abcdefghijklmnopqrstuvwxyz', user: 'test', server: 'testServer' },
+			notAField: 'nope',
+		};
+
+		const response = await authOwnerAgent.post('/credentials').send(payload);
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	test('should reject a read-only id field in the body', async () => {
+		const payload = {
+			id: 'someId',
+			name: 'test credential',
+			type: 'githubApi',
+			data: { accessToken: 'abcdefghijklmnopqrstuvwxyz', user: 'test', server: 'testServer' },
+		};
+
+		const response = await authOwnerAgent.post('/credentials').send(payload);
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.message).toContain('is read-only');
+	});
+
+	test('should reject for member without the credential:create scope', async () => {
+		const memberWithoutCreateScope = await createMemberWithApiKey({ scopes: ['credential:read'] });
+		const agent = testServer.publicApiAgentFor(memberWithoutCreateScope);
+
+		const response = await agent.post('/credentials').send({
+			name: 'test credential',
+			type: 'githubApi',
+			data: { accessToken: 'abcdefghijklmnopqrstuvwxyz', user: 'test', server: 'testServer' },
+		});
+
+		expect(response.statusCode).toBe(403);
+	});
 });
 
 describe('GET /credentials', () => {
@@ -420,6 +491,18 @@ describe('GET /credentials', () => {
 		expect(response.body.nextCursor).not.toBeNull();
 	});
 
+	test('should cap the limit at the maximum page size even when a higher limit is requested', async () => {
+		await createManyCredentials(MAX_ITEMS_PER_PAGE + 1);
+
+		const response = await authOwnerAgent
+			.get('/credentials')
+			.query({ limit: MAX_ITEMS_PER_PAGE + 50 });
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.length).toBe(MAX_ITEMS_PER_PAGE);
+		expect(response.body.nextCursor).not.toBeNull();
+	});
+
 	test('should paginate with cursor', async () => {
 		await saveCredential(dbCredential(), { user: owner });
 		await saveCredential(dbCredential(), { user: owner });
@@ -435,6 +518,33 @@ describe('GET /credentials', () => {
 			.query({ cursor: first.body.nextCursor });
 		expect(second.statusCode).toBe(200);
 		expect(second.body.data.length).toBe(1);
+		expect(second.body.nextCursor).toBeNull();
+	});
+
+	test('should reject an invalid cursor', async () => {
+		const response = await authOwnerAgent.get('/credentials').query({ cursor: 'not-a-cursor' });
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body).toHaveProperty('message', 'An invalid cursor was provided');
+	});
+
+	test('should reject a non-numeric limit', async () => {
+		const response = await authOwnerAgent.get('/credentials').query({ limit: 'abc' });
+
+		expect(response.statusCode).toBe(400);
+	});
+
+	test('should not include credential data or secrets in the response', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+		const decryptedData = await getDecryptedCredentialData(savedCredential.id);
+
+		const response = await authOwnerAgent.get('/credentials');
+
+		expect(response.statusCode).toBe(200);
+		for (const item of response.body.data) {
+			expect(item).not.toHaveProperty('data');
+		}
+		expect(JSON.stringify(response.body)).not.toContain(decryptedData.accessToken);
 	});
 });
 
@@ -481,6 +591,15 @@ describe('GET /credentials/:id', () => {
 
 	test('should return 404 if credential does not exist', async () => {
 		const response = await authOwnerAgent.get('/credentials/123');
+
+		expect(response.statusCode).toBe(404);
+	});
+
+	test('should return 404 for member without global scope requesting a nonexistent credential', async () => {
+		const memberWithReadScope = await createMemberWithApiKey({ scopes: ['credential:read'] });
+		const authMemberWithReadScopeAgent = testServer.publicApiAgentFor(memberWithReadScope);
+
+		const response = await authMemberWithReadScopeAgent.get('/credentials/123');
 
 		expect(response.statusCode).toBe(404);
 	});
@@ -1422,6 +1541,75 @@ describe('PATCH /credentials/:id', () => {
 		expect(updatedData.authentication).toBe('keyPair');
 		expect(updatedData.privateKey).toBeUndefined();
 		expect(updatedData.password).toBe('oldPassword');
+	});
+
+	test('should fail when changing type without providing data', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+
+		const response = await authOwnerAgent
+			.patch(`/credentials/${savedCredential.id}`)
+			.send({ type: 'ftp' });
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.message).toBe(
+			'req.body.data is required when changing credential type. The existing data cannot be used with the new type.',
+		);
+	});
+
+	test('should not include credential data in the response', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+
+		const response = await authOwnerAgent
+			.patch(`/credentials/${savedCredential.id}`)
+			.send({ name: 'Renamed' });
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).not.toHaveProperty('data');
+	});
+
+	test('should ignore an unknown body key', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+
+		const response = await authOwnerAgent
+			.patch(`/credentials/${savedCredential.id}`)
+			.send({ notAField: 'nope' });
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	test('should reject for member without the credential:update scope', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+		const memberWithoutUpdateScope = await createMemberWithApiKey({ scopes: ['credential:read'] });
+		const agent = testServer.publicApiAgentFor(memberWithoutUpdateScope);
+
+		const response = await agent.patch(`/credentials/${savedCredential.id}`).send({ name: 'Nope' });
+
+		expect(response.statusCode).toBe(403);
+	});
+
+	// Measures the current contract for an empty JSON body: `{}` with a JSON content type is a
+	// documented no-op update today, and this must not change across the migration.
+	test('should accept an empty JSON body as a no-op update', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+
+		const response = await authOwnerAgent
+			.patch(`/credentials/${savedCredential.id}`)
+			.set('Content-Type', 'application/json')
+			.send({});
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	// Every field in `UpdateCredentialPublicDto` is optional, so deriving `requestBody.required`
+	// from the DTO shape alone would make the body optional too, unlike the legacy spec (which
+	// marked it required independently of its properties). `@Body({ required: true })` overrides
+	// that inference (see API-297) to keep this 415, matching the pre-migration contract.
+	test('should reject a request with no body and no content type', async () => {
+		const savedCredential = await saveCredential(dbCredential(), { user: owner });
+
+		const response = await authOwnerAgent.patch(`/credentials/${savedCredential.id}`);
+
+		expect(response.statusCode).toBe(415);
 	});
 });
 
