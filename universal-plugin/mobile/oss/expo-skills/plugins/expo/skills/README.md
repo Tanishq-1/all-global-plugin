@@ -19,7 +19,7 @@ Free, open-source Expo SDK and React Native skills. Descriptions are prefixed `F
 | `expo-project-structure` | Folder structure for a new Expo app: `src/` layout, routes-only `app/`, screens, server code, platform-specific files. |
 | `expo-router` | Expo Router navigation: file-based routes, links, native stacks, modals, sheets, native tabs, and headers. |
 | `expo-animation` | Polished React Native animations and gestures with Reanimated, Gesture Handler, Expo Router, and expo-haptics. |
-| `expo-native-ui` | Native-feeling screen styling, semantic colors, controls, icons, media, animations, and visual effects. |
+| `expo-native-ui` | Native-feeling screen styling, semantic colors, controls, icons, media, and visual effects. |
 | `expo-design-system` | In-app design systems: a token theme (color, spacing, typography, radius, shadow, motion), reusable component conventions, and design-system drift audits. |
 | `expo-ui` | `@expo/ui` native components: universal cross-platform first, plus SwiftUI and Jetpack Compose. |
 | `expo-data-fetching` | API calls, React Query, SWR, caching, offline support, and Expo Router data loaders. |
@@ -39,7 +39,7 @@ Skills whose core purpose uses paid Expo Application Services (EAS). Description
 
 | Skill | Use it for | Paid dependency |
 | --- | --- | --- |
-| `eas-app-stores` | Production builds, App Store, Play Store, TestFlight, eas.json profiles, versioning, and store metadata. | EAS + Apple/Google accounts |
+| `eas-app-stores` | Build and submit iOS/Android apps: Expo and other React Native projects, plus existing native apps; TestFlight, profiles, versioning, and metadata. | EAS + Apple/Google accounts |
 | `eas-hosting` | Deploying Expo websites and Expo Router API routes to EAS Hosting: secrets, custom domains, Cloudflare Workers. | EAS Hosting usage |
 | `eas-workflows` | EAS Workflow YAML files and CI/CD automation. | EAS build/compute minutes |
 | `eas-observe` | EAS Observe setup and launch, route, event, and version metrics. | EAS Observe usage |
