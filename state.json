@@ -163,7 +163,7 @@
     "ui-ux-pro-max": {
       "version": "2.13.0",
       "upstream_commit_sha": "de5f12b400775997d213524ef02a7c7d2746806f",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "ce588e277a5aa7f1c3aa81e30e8a1ba1f81a2933",
       "last_updated": "2026-09-19T15:55:49.301Z",
       "history": [
         {
@@ -183,14 +183,20 @@
           "version": "2.13.0",
           "upstream_commit_sha": "7f69fed6a2717900085f1bc3b263721f8ba025e2",
           "ts": "2026-09-14T09:59:05.170Z"
+        },
+        {
+          "repo_commit": "ce588e277a5aa7f1c3aa81e30e8a1ba1f81a2933",
+          "version": "2.13.0",
+          "upstream_commit_sha": "de5f12b400775997d213524ef02a7c7d2746806f",
+          "ts": "2026-09-19T15:55:49.301Z"
         }
       ]
     },
     "gsap-skills": {
       "version": "1.0.0",
       "upstream_commit_sha": "aed9cfd3277740755f6bfc1155c7aa645403b760",
-      "snapshot_commit": "af1090e156f4d6adfee02fa956e5b9546bcd6eac",
-      "last_updated": "2026-09-14T09:59:07.032Z",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-19T15:56:00.741Z",
       "history": [
         {
           "repo_commit": "408fa8dc19a96d6f9948893fab596b32e1f4cd50",
