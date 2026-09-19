@@ -291,7 +291,7 @@
     "azure-skills": {
       "version": "1.2.49",
       "upstream_commit_sha": "f8fac821eca9fe691b618f55313b376cb563d5dd",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "5497c19a1a8189d78adbb7f8acfc86a888f47ad5",
       "last_updated": "2026-09-19T15:56:24.238Z",
       "history": [
         {
@@ -311,14 +311,20 @@
           "version": "1.2.46",
           "upstream_commit_sha": "9d46511c1828eee052d6d0ef4652dcd548565e27",
           "ts": "2026-09-14T09:59:12.769Z"
+        },
+        {
+          "repo_commit": "5497c19a1a8189d78adbb7f8acfc86a888f47ad5",
+          "version": "1.2.49",
+          "upstream_commit_sha": "f8fac821eca9fe691b618f55313b376cb563d5dd",
+          "ts": "2026-09-19T15:56:24.238Z"
         }
       ]
     },
     "sf-skills": {
-      "version": "1.54.0",
-      "upstream_commit_sha": "80e068df8b06cbba9fc1f11c800f3e9a299be787",
-      "snapshot_commit": "df9ebf5e80bb707490bd0626c8f75a4c4d083308",
-      "last_updated": "2026-09-14T09:59:17.149Z",
+      "version": "1.56.0",
+      "upstream_commit_sha": "c217b703b3e5a3c279f1a510d8703161b14bd0a5",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-19T15:57:03.268Z",
       "history": [
         {
           "repo_commit": "863e07d10fb1ad6cb0de01a58fce306ad21b646c",
