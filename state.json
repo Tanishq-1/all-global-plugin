@@ -99,7 +99,7 @@
     "prompts-chat": {
       "version": "0.1.0",
       "upstream_commit_sha": "f78a1c5136fa080155d928e0d7e2b4a41ddef03e",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "424a985dfed18f0fa45d4c0088ce4f00e3d82beb",
       "last_updated": "2026-09-19T15:55:15.177Z",
       "history": [
         {
@@ -119,14 +119,20 @@
           "version": "0.1.0",
           "upstream_commit_sha": "f78a1c5136fa080155d928e0d7e2b4a41ddef03e",
           "ts": "2026-09-14T09:59:00.711Z"
+        },
+        {
+          "repo_commit": "424a985dfed18f0fa45d4c0088ce4f00e3d82beb",
+          "version": "0.1.0",
+          "upstream_commit_sha": "f78a1c5136fa080155d928e0d7e2b4a41ddef03e",
+          "ts": "2026-09-19T15:55:15.177Z"
         }
       ]
     },
     "anthropic-doc-skills": {
       "version": null,
       "upstream_commit_sha": "34040c9c568585f6929bedeaad110ad08f079624",
-      "snapshot_commit": "b26c1eee67174646f00b3e714e75a5ac9134eebf",
-      "last_updated": "2026-09-14T09:59:03.095Z",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-19T15:55:38.263Z",
       "history": [
         {
           "repo_commit": "0dcee2a87ba99efdcd6f3473679a214e36ce2733",
