@@ -227,7 +227,7 @@
     "supabase-agent-skills": {
       "version": "0.1.8",
       "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
-      "snapshot_commit": "pending",
+      "snapshot_commit": "44b0c9b9aeb972e5f402bd30e820cbeb8047799b",
       "last_updated": "2026-09-19T15:56:06.451Z",
       "history": [
         {
@@ -247,14 +247,20 @@
           "version": "0.1.8",
           "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
           "ts": "2026-09-14T09:59:08.674Z"
+        },
+        {
+          "repo_commit": "44b0c9b9aeb972e5f402bd30e820cbeb8047799b",
+          "version": "0.1.8",
+          "upstream_commit_sha": "8331f910845103c08d51f6ca1d86ebb7d1f745e3",
+          "ts": "2026-09-19T15:56:06.451Z"
         }
       ]
     },
     "expo-skills": {
       "version": null,
-      "upstream_commit_sha": "be95528712e3709b786d573edae90d14c67949a8",
-      "snapshot_commit": "a833f523eec91d4ac4e890a30b236986354a0003",
-      "last_updated": "2026-09-14T09:59:10.554Z",
+      "upstream_commit_sha": "39708666ce7014def1f8e34f3d8c93e8d3f588bb",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-19T15:56:13.635Z",
       "history": [
         {
           "repo_commit": "9991b35182fd7ad29c209513f0d457578b01a1f8",
