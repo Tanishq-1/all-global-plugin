@@ -1,10 +1,10 @@
 {
   "plugins": {
     "superpowers": {
-      "version": "6.3.0",
-      "upstream_commit_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "snapshot_commit": "dd1a56bfb9f19ae4daaf7aa43ca494c6907ff0d3",
-      "last_updated": "2026-09-14T09:58:51.010Z",
+      "version": "6.4.1",
+      "upstream_commit_sha": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+      "snapshot_commit": "pending",
+      "last_updated": "2026-09-19T15:54:23.903Z",
       "history": [
         {
           "repo_commit": "816bcff60714d07ec32dac89d85a3a76d06c996a",
